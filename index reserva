@@ -1,126 +1,154 @@
-
 <!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>SimFadiga — Simulador Avançado de Fadiga e Seleção de Materiais (HTML/JS)</title>
+  <title>  — Simulador Avançado de Fadiga e Seleção de Materiais (HTML/JS)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
   :root {
-    --bg: #0f172a;
-    --card: #111827;
-    --text: #e5e7eb;
-    --muted: #9ca3af;
-    --accent: #22c55e;
-    --accent-2: #06b6d4;
-    --accent-3: #f59e0b;
-    --border: #1f2937;
-    --danger: #ef4444;
+    --bg: #0b0e14;
+    --panel: #131821;
+    --card: #0f141c;
+    --text: #d1d5db;
+    --muted: #8a93a6;
+    --border: #232a33;
+
+    --btn-bg: #20252e;
+    --btn-fg: #cbd5e1;
+    --btn-border: #2e3540;
+    --btn-hover: #262b36;
+    --btn-active: #1b1f26;
+
+    --line-steel: #9aa0a6;
+    --bar-gunmetal: #59606d;
+    --line-haigh: #8b929e;
+    --point-alloy: rgba(156,163,175,0.9);
+    --axes: #2a323e;
   }
 
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
-    background: linear-gradient(180deg, #0b1222, var(--bg));
     color: var(--text);
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    background:
+      radial-gradient(1200px 600px at 15% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+      radial-gradient(800px 400px at 85% 20%, rgba(255,255,255,0.02) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 22px),
+      var(--bg);
   }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
 
   header {
-    padding: 24px;
+    padding: 16px 0;
     border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
   }
-  h1 { margin: 0 0 8px 0; font-size: 1.6rem; }
-  header p { margin: 4px 0 0 0; color: var(--muted); }
+  .brand { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .logo {
+    height: clamp(40px, 6vw, 64px);
+    width: clamp(40px, 6vw, 64px);
+    object-fit: contain;
+    background: #0c111b;
+    border: 1px dashed #374151;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px #0c111b, inset 0 0 24px rgba(255,255,255,0.02);
+  }
+  .title h1 { margin: 0; font-size: clamp(1.2rem, 3.4vw, 1.8rem); letter-spacing: .3px; }
+  .title p { margin: 4px 0 0 0; color: var(--muted); font-size: clamp(.85rem, 2.5vw, 1rem); }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 
-  main { padding: 24px; }
+  main { padding: 24px 0; }
   .panel {
-    margin: 0 0 24px 0;
-    padding: 16px;
-    background: rgba(17,24,39,.6);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    margin: 0 0 24px 0; padding: 16px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 32px rgba(0,0,0,0.35);
   }
-  .panel h2 {
-    margin: 0 0 12px 0;
-    font-size: 1.2rem;
-    color: #fff;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+  .panel h2 { margin: 0 0 12px 0; font-size: 1.1rem; color: #e5e7eb; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 16px; }
+  .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
 
   .card {
-    padding: 12px;
-    background: rgba(3,10,28,.6);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    padding: 12px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 10px;
   }
-  .card h3 { margin: 0 0 8px 0; font-size: 1rem; color: #fff; }
+  .card h3 { margin: 0 0 8px 0; font-size: 1rem; color: #e5e7eb; }
   .card p { margin: 0 0 8px 0; color: var(--muted); }
   .small { font-size: .9rem; color: var(--muted); }
 
   .form { display: grid; gap: 8px; }
+  .form.grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 12px; }
+  @media (max-width: 720px){ .form.grid-2 { grid-template-columns: 1fr; } }
+
   label { display: grid; gap: 6px; font-size: .95rem; }
   input[type="number"], input[type="text"], select, textarea {
-    background: #0b1120; color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px;
+    background: #0c111b; color: var(--text);
+    border: 1px solid #1e2430; border-radius: 8px; padding: 8px; outline: none;
   }
-  textarea { width: 100%; }
+  input[type="number"]:focus, input[type="text"]:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 2px #1f2a36; border-color: #2a3341;
+  }
+  textarea { width: 100%; min-height: 120px; }
   input[type="file"] { color: var(--text); }
 
   .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .muted { color: var(--muted); }
+  .actions { margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
 
-  .actions {
-    margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap;
-  }
   button {
-    background: var(--accent); color: #041016;
-    border: none; border-radius: 999px;
-    padding: 10px 16px; font-weight: 700; cursor: pointer;
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 1px solid var(--btn-border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 4px 16px rgba(0,0,0,0.35);
+    transition: background .15s ease, border-color .15s ease, transform .05s ease;
   }
-  button:hover { filter: brightness(1.05); }
-  button#btnSelect { background: var(--accent-2); }
-  button.secondary { background: #334155; color: #e2e8f0; }
-  button.warn { background: var(--accent-3); color: #1f2937; }
-  button.danger { background: var(--danger); color: #081016; }
+  button:hover { background: var(--btn-hover); border-color: #39414c; }
+  button:active { background: var(--btn-active); transform: translateY(1px); }
+  button.secondary { background: #1a1f27; border-color: #2a313b; }
+  button.danger { background: #241d20; border-color: #3b2a2f; color: #d4b8bd; }
+  button#btnSelect { background: #1d222a; }
 
   .output {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    background: #0b1120; border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px; min-height: 140px;
-    white-space: pre-wrap;
+    background: #0c111b; border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; min-height: 140px; white-space: pre-wrap;
   }
 
-  footer {
-    padding: 16px 24px; border-top: 1px solid var(--border); color: var(--muted);
-    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-  }
+  footer { padding: 16px 0; border-top: 1px solid var(--border); color: var(--muted); }
+  footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
-  .weights { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-  @media (max-width: 1100px) { .charts { grid-template-columns: 1fr; } }
-  canvas { width: 100%; height: 260px; background: #0b1120; border: 1px solid var(--border); border-radius: 8px; }
+  canvas { width: 100%; background: #0c111b; border: 1px solid var(--border); border-radius: 8px; }
   </style>
 </head>
 <body>
   <header>
-    <h1>SimFadiga — Simulador Avançado de Fadiga e Seleção de Materiais</h1>
-    <p>Simule vida em serviço e selecione materiais considerando ambiente, correção de tensão média (Goodman/Haigh/Gerber), fatores de Marin, e custo/massa.</p>
+    <div class="container brand">
+      <img id="appLogo" class="logo" alt="Logo" />
+      <div class="title">
+        <h1> — Simulador Avançado de Fadiga e Seleção de Materiais</h1>
+        <p>Simule vida em serviço e selecione materiais considerando ambiente, correções de tensão média (Goodman/Haigh/Gerber), fatores de Marin e custo/massa.</p>
+      </div>
+      <div class="header-actions">
+        <button id="btnSetLogo" class="secondary">Adicionar logo</button>
+        <button id="btnRemoveLogo" class="secondary">Remover</button>
+        <input type="file" id="logoFile" accept="image/*" hidden />
+      </div>
+    </div>
   </header>
 
-  <main>
+  <main class="container">
     <section class="panel">
       <h2>Entrada de Dados</h2>
       <div class="grid">
         <div class="card">
           <h3>Histórico de Tensões (CSV)</h3>
-          <p>CSV com colunas: <code>stress_MPa</code> e opcional <code>time_s</code>.</p>
+          <p>CSV com colunas: <code>stress_MPa</code> e opcional <code>time_s</code>. Aceita vírgula decimal e “;”, “,” ou “TAB”.</p>
           <div class="inline">
             <input type="file" id="fileLoadCase" accept=".csv" />
             <button id="btnUseExampleLoad" class="secondary">Usar exemplo</button>
@@ -183,7 +211,6 @@
                   <option value="as-forged">as-forged</option>
                 </select>
               </div>
-              <span class="muted">Dica: selecione um preset e ajuste conforme UTS; valor final preenche em ka.</span>
             </label>
             <label>kb — tamanho
               <input type="number" id="kb" value="1.0" step="0.01" />
@@ -220,6 +247,49 @@
             <label>Material para simulação
               <select id="materialSelect"></select>
             </label>
+
+            <details>
+              <summary>Adicionar material (formulário — mais fácil)</summary>
+              <div class="form grid-2" style="margin-top:8px;">
+                <label>Nome
+                  <input type="text" id="f_name" placeholder="Ex.: AISI_4140_QT" />
+                </label>
+                <label>Tipo
+                  <input type="text" id="f_type" placeholder="steel, aluminum, ..." />
+                </label>
+                <label>Sut (UTS) [MPa]
+                  <input type="number" id="f_sut" step="1" />
+                </label>
+                <label>Sy (Yield) [MPa]
+                  <input type="number" id="f_sy" step="1" />
+                </label>
+                <label>Densidade [kg/m³]
+                  <input type="number" id="f_rho" step="1" />
+                </label>
+                <label>Custo [US$/kg]
+                  <input type="number" id="f_cost" step="0.01" />
+                </label>
+                <label>σf′ (fatigue_strength_coeff) [MPa]
+                  <input type="number" id="f_sf" step="1" />
+                </label>
+                <label>b (fatigue_exponent — negativo)
+                  <input type="number" id="f_b" step="0.001" />
+                </label>
+                <label>Se (endurance limit) [MPa] (0 se não houver)
+                  <input type="number" id="f_se" step="1" />
+                </label>
+                <label>q (sensibilidade ao entalhe) [0–1]
+                  <input type="number" id="f_q" step="0.01" min="0" max="1" />
+                </label>
+              </div>
+              <div class="inline" style="margin-top:8px;">
+                <button id="btnAddMaterial" class="secondary">Adicionar/Atualizar material</button>
+                <button id="btnFillFromSelected" class="secondary">Preencher com selecionado</button>
+                <button id="btnClearForm" class="secondary">Limpar</button>
+              </div>
+              <p class="small muted">Dica: σf′ geralmente é ~1.0–1.6×Sut para aços; b costuma ser −0.08 a −0.12.</p>
+            </details>
+
             <details>
               <summary>Adicionar/editar materiais (JSON)</summary>
               <textarea id="materialsJson" rows="12" placeholder='{"NovoMaterial": {...}}'></textarea>
@@ -227,7 +297,7 @@
                 <button id="btnApplyMaterials" class="secondary">Aplicar JSON</button>
                 <button id="btnExportMaterials" class="secondary">Exportar JSON</button>
               </div>
-              <p class="small">Campos suportados por material: name, type, ultimate_tensile_strength_MPa, yield_strength_MPa, density_kg_m3, cost_per_kg_usd, fatigue_strength_coeff_MPa (σf'), fatigue_exponent_b (b &lt; 0), endurance_limit_MPa (Se), notch_sensitivity_q.</p>
+              <p class="small">Campos: name, type, ultimate_tensile_strength_MPa, yield_strength_MPa, density_kg_m3, cost_per_kg_usd, fatigue_strength_coeff_MPa (σf′), fatigue_exponent_b (b&lt;0), endurance_limit_MPa (Se), notch_sensitivity_q.</p>
             </details>
           </div>
         </div>
@@ -308,60 +378,34 @@
       <details>
         <summary>Notas de modelo e limitações</summary>
         <ul>
-          <li>Rainflow implementado de forma simplificada (próximo a ASTM E1049-85). Para uso crítico, valide com espectros padrão.</li>
-          <li>Marin afeta Se (endurance). Fatores ambientais também afetam σf' e Se.</li>
-          <li>Gerber/Goodman/Haigh para correção de tensão média; escolha conforme material e regime.</li>
-          <li>FS na vida: exige vida ≥ FS × meta. Ajuste conforme política de projeto.</li>
-          <li>LCF, multiaxial, crescimento de trinca e efeitos de sequência não estão incluídos neste arquivo (podem ser adicionados).</li>
+          <li>Rainflow com algoritmo de contagem padrão (ASTM E1049-85): ciclos cheios=1; remanescentes=0,5.</li>
+          <li>Para séries muito longas, considere fracionar a missão; esta implementação é O(n) e lida bem com 10^5 pontos.</li>
         </ul>
       </details>
     </section>
   </main>
 
   <footer>
-    <small>SimFadiga — HTML/JS v1.2.0 (demonstrativo). Calibre parâmetros para aplicações críticas.</small>
-    <small class="muted">Salvar/recuperar dados: localStorage. Exporte relatório para arquivamento.</small>
+    <div class="container">
+      <small>SimFadiga — HTML/JS v1.6.1 (tecnológico-industrial). Calibre parâmetros para aplicações críticas.</small>
+      <small class="muted">Salvar/recuperar dados: localStorage. Exporte relatório para arquivamento.</small>
+    </div>
   </footer>
 
   <script>
-  // ===== Banco de materiais (exemplo + persistência) =====
   const DEFAULT_MATERIALS_DB = {
-    AISI_1045: {
-      name: "AISI_1045",
-      type: "steel",
-      ultimate_tensile_strength_MPa: 620,
-      yield_strength_MPa: 530,
-      density_kg_m3: 7850,
-      cost_per_kg_usd: 1.5,
-      fatigue_strength_coeff_MPa: 1000, // σf'
-      fatigue_exponent_b: -0.09,        // Basquin (negativo)
-      endurance_limit_MPa: 270,         // Se
-      notch_sensitivity_q: 0.8
-    },
-    Al_7075_T6: {
-      name: "Al_7075_T6",
-      type: "aluminum",
-      ultimate_tensile_strength_MPa: 570,
-      yield_strength_MPa: 500,
-      density_kg_m3: 2810,
-      cost_per_kg_usd: 5.0,
-      fatigue_strength_coeff_MPa: 850,
-      fatigue_exponent_b: -0.11,
-      endurance_limit_MPa: 0,          // alumínio sem Se definido
-      notch_sensitivity_q: 0.6
-    },
-    Ti_6Al_4V: {
-      name: "Ti_6Al_4V",
-      type: "titanium",
-      ultimate_tensile_strength_MPa: 900,
-      yield_strength_MPa: 830,
-      density_kg_m3: 4420,
-      cost_per_kg_usd: 30.0,
-      fatigue_strength_coeff_MPa: 1200,
-      fatigue_exponent_b: -0.08,
-      endurance_limit_MPa: 500,
-      notch_sensitivity_q: 0.9
-    }
+    AISI_1020: { name:"AISI_1020", type:"steel", ultimate_tensile_strength_MPa:400, yield_strength_MPa:350, density_kg_m3:7850, cost_per_kg_usd:1.2, fatigue_strength_coeff_MPa:850, fatigue_exponent_b:-0.09, endurance_limit_MPa:200, notch_sensitivity_q:0.8 },
+    AISI_1045: { name:"AISI_1045", type:"steel", ultimate_tensile_strength_MPa:620, yield_strength_MPa:530, density_kg_m3:7850, cost_per_kg_usd:1.5, fatigue_strength_coeff_MPa:1000, fatigue_exponent_b:-0.09, endurance_limit_MPa:270, notch_sensitivity_q:0.8 },
+    AISI_4140_QT: { name:"AISI_4140_QT", type:"steel", ultimate_tensile_strength_MPa:1050, yield_strength_MPa:930, density_kg_m3:7850, cost_per_kg_usd:2.2, fatigue_strength_coeff_MPa:1150, fatigue_exponent_b:-0.085, endurance_limit_MPa:500, notch_sensitivity_q:0.9 },
+    AISI_4340_QT: { name:"AISI_4340_QT", type:"steel", ultimate_tensile_strength_MPa:1300, yield_strength_MPa:1080, density_kg_m3:7850, cost_per_kg_usd:2.8, fatigue_strength_coeff_MPa:1350, fatigue_exponent_b:-0.085, endurance_limit_MPa:600, notch_sensitivity_q:0.92 },
+    SS_304: { name:"SS_304", type:"stainless", ultimate_tensile_strength_MPa:620, yield_strength_MPa:215, density_kg_m3:8000, cost_per_kg_usd:3.0, fatigue_strength_coeff_MPa:900, fatigue_exponent_b:-0.095, endurance_limit_MPa:240, notch_sensitivity_q:0.85 },
+    SS_17_4PH: { name:"SS_17_4PH", type:"stainless", ultimate_tensile_strength_MPa:1170, yield_strength_MPa:1060, density_kg_m3:7800, cost_per_kg_usd:6.0, fatigue_strength_coeff_MPa:1300, fatigue_exponent_b:-0.085, endurance_limit_MPa:500, notch_sensitivity_q:0.9 },
+    Al_6061_T6: { name:"Al_6061_T6", type:"aluminum", ultimate_tensile_strength_MPa:310, yield_strength_MPa:276, density_kg_m3:2700, cost_per_kg_usd:4.0, fatigue_strength_coeff_MPa:520, fatigue_exponent_b:-0.11, endurance_limit_MPa:0, notch_sensitivity_q:0.6 },
+    Al_2024_T3: { name:"Al_2024_T3", type:"aluminum", ultimate_tensile_strength_MPa:470, yield_strength_MPa:325, density_kg_m3:2780, cost_per_kg_usd:6.0, fatigue_strength_coeff_MPa:650, fatigue_exponent_b:-0.10, endurance_limit_MPa:0, notch_sensitivity_q:0.6 },
+    Al_7075_T6: { name:"Al_7075_T6", type:"aluminum", ultimate_tensile_strength_MPa:570, yield_strength_MPa:500, density_kg_m3:2810, cost_per_kg_usd:5.0, fatigue_strength_coeff_MPa:850, fatigue_exponent_b:-0.11, endurance_limit_MPa:0, notch_sensitivity_q:0.6 },
+    Ti_6Al_4V: { name:"Ti_6Al_4V", type:"titanium", ultimate_tensile_strength_MPa:900, yield_strength_MPa:830, density_kg_m3:4420, cost_per_kg_usd:30.0, fatigue_strength_coeff_MPa:1200, fatigue_exponent_b:-0.08, endurance_limit_MPa:500, notch_sensitivity_q:0.9 },
+    Mg_AZ31B: { name:"Mg_AZ31B", type:"magnesium", ultimate_tensile_strength_MPa:275, yield_strength_MPa:200, density_kg_m3:1770, cost_per_kg_usd:5.0, fatigue_strength_coeff_MPa:420, fatigue_exponent_b:-0.12, endurance_limit_MPa:0, notch_sensitivity_q:0.5 },
+    Inconel_718: { name:"Inconel_718", type:"nickel_alloy", ultimate_tensile_strength_MPa:1380, yield_strength_MPa:1100, density_kg_m3:8190, cost_per_kg_usd:40.0, fatigue_strength_coeff_MPa:1550, fatigue_exponent_b:-0.08, endurance_limit_MPa:600, notch_sensitivity_q:0.95 }
   };
   function loadMaterials() {
     try {
@@ -369,16 +413,11 @@
       if (!raw) return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
       const parsed = JSON.parse(raw);
       return parsed && typeof parsed === "object" ? parsed : JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
-    } catch {
-      return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
-    }
+    } catch { return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB)); }
   }
-  function saveMaterials(db) {
-    localStorage.setItem("simfadiga_materials", JSON.stringify(db, null, 2));
-  }
+  function saveMaterials(db) { localStorage.setItem("simfadiga_materials", JSON.stringify(db, null, 2)); }
   let MATERIALS_DB = loadMaterials();
 
-  // ===== Utilitários =====
   const fmt = {
     number: (x, digits = 3) => {
       if (x === Infinity) return "inf";
@@ -392,35 +431,54 @@
     mass: (x) => (x == null ? "n/a" : `${x.toFixed(3)} kg`)
   };
 
-  function parseCSV(text) {
-    // Retorna array de objetos { time_s?, stress_MPa }
-    const lines = text.trim().split(/\r?\n/);
+  function parseNumberFlexible(s) {
+    if (s == null) return NaN;
+    s = String(s).trim();
+    if (s === "") return NaN;
+    s = s.replace(/\s/g, "");
+    const hasComma = s.includes(",");
+    const hasDot = s.includes(".");
+    if (hasComma && hasDot) {
+      if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+        s = s.replace(/\./g, "").replace(",", ".");
+      } else {
+        s = s.replace(/,/g, "");
+      }
+    } else if (hasComma) { s = s.replace(",", "."); }
+    return parseFloat(s);
+  }
+
+  function detectDelimiter(line) {
+    const candidates = [",", ";", "\t"];
+    let best = ",", bestCount = -1;
+    for (const c of candidates) {
+      const count = (line.match(new RegExp("\\" + c, "g")) || []).length;
+      if (count > bestCount) { best = c; bestCount = count; }
+    }
+    return best;
+  }
+
+  function parseCSVFlexible(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
     if (lines.length === 0) return [];
-    const header = lines[0].split(",").map(s => s.trim());
+    const delimiter = detectDelimiter(lines[0]);
+    const header = lines[0].split(delimiter).map(s => s.trim());
     const idxStress = header.indexOf("stress_MPa");
     const idxTime = header.indexOf("time_s");
     if (idxStress === -1) throw new Error("CSV deve conter coluna 'stress_MPa'.");
     const rows = [];
     for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",").map(s => s.trim());
-      const stress = parseFloat(cols[idxStress]);
-      const time = idxTime !== -1 ? parseFloat(cols[idxTime]) : undefined;
-      if (!isNaN(stress)) rows.push({ stress_MPa: stress, time_s: time });
+      const cols = lines[i].split(delimiter).map(s => s.trim());
+      const stress = parseNumberFlexible(cols[idxStress]);
+      const time = idxTime !== -1 ? parseNumberFlexible(cols[idxTime]) : undefined;
+      if (!isNaN(stress)) rows.push({ stress_MPa: stress, time_s: isNaN(time) ? undefined : time });
     }
     return rows;
   }
 
-  // ===== Ambiente =====
   function fatigueStrengthModifier(env) {
-    // Heurístico: temperatura/umidade/corrosão/salinidade reduzem; clamp [0.1, 1.2]
-    const T = env.temperature_C;
-    const H = env.humidity_pct;
-    const C = env.corrosivity;
-    const S = env.salinity;
-    const alpha_T = -0.003;  // -0.3% por °C acima de 20
-    const beta_H  = -0.001;  // -0.1% por ponto % acima de 50
-    const gamma_C = -0.20;   // corrosividade forte: -20% em C=1
-    const delta_S = -0.10;   // salinidade moderada: -10% em S=1
+    const T = env.temperature_C, H = env.humidity_pct, C = env.corrosivity, S = env.salinity;
+    const alpha_T = -0.003, beta_H = -0.001, gamma_C = -0.20, delta_S = -0.10;
     const fT = 1.0 + alpha_T * Math.max(0.0, T - 20.0);
     const fH = 1.0 + beta_H  * Math.max(0.0, H - 50.0);
     const fC = 1.0 + gamma_C * C;
@@ -438,57 +496,44 @@
     };
   }
 
-  // ===== Rainflow (simplificado, estilo ASTM) =====
-  function extractTurningPoints(series) {
+  function extractTurningPointsASTM(series) {
     if (!series || series.length === 0) return [];
-    const tp = [series[0]];
-    for (let i = 1; i < series.length; i++) {
-      const x = series[i];
-      if (x !== tp[tp.length - 1]) tp.push(x);
+    const s = [series[0]];
+    for (let i = 1; i < series.length; i++) { if (series[i] !== s[s.length - 1]) s.push(series[i]); }
+    if (s.length < 2) return s.slice();
+    const tp = [s[0]];
+    for (let i = 1; i < s.length - 1; i++) {
+      const a = s[i - 1], b = s[i], c = s[i + 1];
+      const isPeak = b >= a && b >= c && (b > a || b > c);
+      const isValley = b <= a && b <= c && (b < a || b < c);
+      if (isPeak || isValley) tp.push(b);
     }
-    const filtered = [tp[0]];
-    for (let i = 1; i < tp.length - 1; i++) {
-      const a = tp[i - 1], b = tp[i], c = tp[i + 1];
-      const monotone = (a <= b && b <= c) || (a >= b && b >= c);
-      if (!monotone) filtered.push(b);
-    }
-    filtered.push(tp[tp.length - 1]);
-    return filtered;
+    tp.push(s[s.length - 1]);
+    return tp;
   }
   function rainflowCount(series) {
-    // Retorna lista de { amplitude, mean, count }
-    const y = extractTurningPoints(series);
-    const stack = [];
-    const cycles = [];
-    const rng = (a, b) => Math.abs(a - b);
-
+    const y = extractTurningPointsASTM(series);
+    const stack = [], cycles = [];
+    const rng = (a,b)=>Math.abs(a-b);
     for (const v of y) {
       stack.push(v);
       while (stack.length >= 3) {
-        const X = stack[stack.length - 3];
-        const Y = stack[stack.length - 2];
-        const Z = stack[stack.length - 1];
-        const R1 = rng(X, Y);
-        const R2 = rng(Y, Z);
-        if (R2 >= R1) {
-          const amplitude = R1 / 2.0;
-          const mean = (X + Y) / 2.0;
-          cycles.push({ amplitude, mean, count: 0.5 });
-          stack.splice(stack.length - 3, 1);
-        } else {
-          break;
-        }
+        const n = stack.length;
+        const r1 = rng(stack[n-2], stack[n-3]);
+        const r2 = rng(stack[n-1], stack[n-2]);
+        if (r2 >= r1) {
+          const amplitude = r1 / 2.0;
+          const mean = (stack[n-2] + stack[n-3]) / 2.0;
+          cycles.push({ amplitude, mean, count: 1.0 });
+          stack.splice(n-2, 1);
+        } else break;
       }
     }
-    while (stack.length >= 2) {
-      const X = stack[stack.length - 2];
-      const Y = stack[stack.length - 1];
-      const amplitude = rng(X, Y) / 2.0;
-      const mean = (X + Y) / 2.0;
+    for (let i = 0; i < stack.length - 1; i++) {
+      const amplitude = Math.abs(stack[i+1] - stack[i]) / 2.0;
+      const mean = (stack[i+1] + stack[i]) / 2.0;
       cycles.push({ amplitude, mean, count: 0.5 });
-      stack.splice(stack.length - 2, 1);
     }
-    // Agregação
     const bucket = new Map();
     for (const c of cycles) {
       const key = `${Math.round(c.amplitude * 1000) / 1000}|${Math.round(c.mean * 1000) / 1000}`;
@@ -503,7 +548,6 @@
     return aggregated;
   }
 
-  // ===== Correções de tensão média =====
   function goodmanCorrection(sigma_a, sigma_m, sigma_uts) {
     const denom = Math.max(1e-9, 1 - sigma_m / Math.max(1e-9, sigma_uts));
     return sigma_a / denom;
@@ -518,7 +562,6 @@
     return sigma_a / denom;
   }
 
-  // ===== Basquin + Miner =====
   function cyclesToFailure(sigma_a_corr, sigma_f_prime, b, Se) {
     if (Se > 0 && sigma_a_corr < Se) return Infinity;
     if (sigma_a_corr <= 0) return Infinity;
@@ -535,7 +578,6 @@
       else if (method === "haigh") sigma_a_corr = haighCorrection(sigma_a, sigma_m, sigma_y);
       else if (method === "gerber") sigma_a_corr = gerberCorrection(sigma_a, sigma_m, sigma_uts);
       else throw new Error("Método inválido. Use 'goodman', 'haigh' ou 'gerber'.");
-
       const N = cyclesToFailure(sigma_a_corr, sigma_f_prime, b, Se);
       if (isFinite(N) && N > 0) D += c.count / N;
     }
@@ -543,7 +585,6 @@
     return { D, life_missions };
   }
 
-  // ===== Seleção / avaliação =====
   function estimateMassAndCost(material, volume_m3) {
     if (volume_m3 == null || isNaN(volume_m3)) return { mass: null, cost: null };
     const mass = material.density_kg_m3 * volume_m3;
@@ -565,20 +606,15 @@
     const matAdj = adjustMaterialForEnv(material, envFactor);
     const cycles = rainflowCount(stressSeries);
     const kf = kfFromKt(matAdj, kt);
-
-    // Marin aplicado ao Se (apenas)
     const k_marin = marinSeFactor(marin);
     const Se_eff = matAdj.endurance_limit_MPa * k_marin;
-    const sigma_f_eff = matAdj.fatigue_strength_coeff_MPa; // Mantemos σf' com ajuste ambiental, Marin só no Se
-
+    const sigma_f_eff = matAdj.fatigue_strength_coeff_MPa;
     const { D, life_missions } = minerDamage(
       cycles, method,
       matAdj.ultimate_tensile_strength_MPa,
       matAdj.yield_strength_MPa,
       sigma_f_eff, matAdj.fatigue_exponent_b, Se_eff, kf
     );
-
-    // FS na vida: exige vida >= FS * meta; aqui retornamos life (sem mexer no cálculo)
     return {
       damage: D, life: life_missions, env_factor: envFactor, kf,
       Se_eff, sigma_f_eff,
@@ -591,39 +627,28 @@
   function selectBestMaterials(db, env, stressSeries, lifeTarget, weights=[0.5, 0.5], volume_m3=null, method="goodman", kt=1.0, marin={}, fsLife=1.0) {
     const [w_cost, w_mass] = weights;
     const evaluated = [];
-
     for (const name of Object.keys(db)) {
       const mat = db[name];
       const lifeInfo = evaluateMaterialLife(mat, env, stressSeries, method, kt, marin, fsLife);
       const { mass, cost } = estimateMassAndCost(mat, volume_m3);
       evaluated.push({
-        name,
-        life: lifeInfo.life,
-        damage: lifeInfo.damage,
-        env_factor: lifeInfo.env_factor,
-        kf: lifeInfo.kf,
-        mass, cost,
-        Se_eff: lifeInfo.Se_eff,
-        uts_eff: lifeInfo.uts_eff,
-        ys_eff: lifeInfo.ys_eff,
-        marin_factor: lifeInfo.marin_factor,
-        material: mat
+        name, life: lifeInfo.life, damage: lifeInfo.damage,
+        env_factor: lifeInfo.env_factor, kf: lifeInfo.kf, mass, cost,
+        Se_eff: lifeInfo.Se_eff, uts_eff: lifeInfo.uts_eff, ys_eff: lifeInfo.ys_eff,
+        marin_factor: lifeInfo.marin_factor, material: mat
       });
     }
-
     const costs = evaluated.map(e => e.cost).filter(v => v != null);
     const masses = evaluated.map(e => e.mass).filter(v => v != null);
     const cmin = costs.length ? Math.min(...costs) : 0.0;
     const cmax = costs.length ? Math.max(...costs) : 1.0;
     const mmin = masses.length ? Math.min(...masses) : 0.0;
     const mmax = masses.length ? Math.max(...masses) : 1.0;
-
     const norm = (x, xmin, xmax) => {
       if (x == null) return 0.0;
       if (xmax === xmin) return 0.0;
       return (x - xmin) / (xmax - xmin);
     };
-
     const results = [];
     const requiredLife = lifeTarget * Math.max(1.0, fsLife);
     for (const e of evaluated) {
@@ -631,18 +656,10 @@
       if (!meets_life) continue;
       const score = w_cost * norm(e.cost, cmin, cmax) + w_mass * norm(e.mass, mmin, mmax);
       results.push({
-        name: e.name,
-        life: e.life,
-        damage: e.damage,
-        mass: e.mass,
-        cost: e.cost,
-        score,
-        Se_eff: e.Se_eff,
-        uts_eff: e.uts_eff,
-        ys_eff: e.ys_eff
+        name: e.name, life: e.life, damage: e.damage, mass: e.mass, cost: e.cost, score,
+        Se_eff: e.Se_eff, uts_eff: e.uts_eff, ys_eff: e.ys_eff
       });
     }
-
     results.sort((a, b) => {
       const scoreCmp = a.score - b.score;
       if (scoreCmp !== 0) return scoreCmp;
@@ -650,11 +667,9 @@
       const lifeB = b.life === Infinity ? Number.MAX_SAFE_INTEGER : b.life;
       return lifeB - lifeA;
     });
-
     return results;
   }
 
-  // ===== Séries e exemplo =====
   const EXAMPLE_CSV = `time_s,stress_MPa
 0.0,0
 0.1,50
@@ -674,23 +689,21 @@
 
   function stressSeriesFromRows(rows) { return rows.map(r => r.stress_MPa); }
 
-  // ===== Gráficos simples (Canvas 2D) =====
   function drawAxes(ctx, x, y, w, h) {
-    ctx.strokeStyle = "#22304a"; ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.rect(x+0.5, y+0.5, w-1, h-1);
-    ctx.stroke();
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--axes').trim();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.rect(x+0.5, y+0.5, w-1, h-1); ctx.stroke();
   }
   function plotSeries(canvas, series) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawAxes(ctx, 6, 6, canvas.width-12, canvas.height-12);
-    if (!series || series.length === 0) return;
-    const pad = 12;
-    const w = canvas.width - 2*pad, h = canvas.height - 2*pad;
+    if (!series || series.length < 2) return;
+    const pad = 12, w = canvas.width - 2*pad, h = canvas.height - 2*pad;
     const minY = Math.min(...series), maxY = Math.max(...series);
     const rangeY = maxY - minY || 1;
-    ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--line-steel').trim();
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
     for (let i=0; i<series.length; i++) {
       const sx = pad + (i/(series.length-1))*w;
@@ -698,8 +711,8 @@
       if (i===0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
     }
     ctx.stroke();
-    // grid labels
-    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+    ctx.font = "12px ui-sans-serif";
     ctx.fillText(`min=${fmt.number(minY)} MPa`, pad+6, canvas.height - 6);
     ctx.fillText(`max=${fmt.number(maxY)} MPa`, canvas.width - 140, 18);
   }
@@ -712,7 +725,7 @@
     const counts = cycles.map(c => c.count);
     const minA = Math.min(...amps), maxA = Math.max(...amps);
     const min = minA, max = maxA || 1;
-    const bw = (max - min) / bins || 1;
+    const bw = (max - min) / (bins || 1) || 1;
     const hist = new Array(bins).fill(0);
     for (let i=0;i<cycles.length;i++){
       const a = amps[i]; const cnt = counts[i];
@@ -727,10 +740,11 @@
       const x = pad + i * (w / bins) + (w/bins - barW)/2;
       const hh = (hist[i] / maxCount) * h;
       const y = pad + (h - hh);
-      ctx.fillStyle = "#06b6d4";
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bar-gunmetal').trim();
       ctx.fillRect(x, y, barW, hh);
     }
-    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+    ctx.font = "12px ui-sans-serif";
     ctx.fillText(`amp min=${fmt.number(min)} MPa`, pad+6, canvas.height - 6);
     ctx.fillText(`amp max=${fmt.number(max)} MPa`, canvas.width - 160, 18);
   }
@@ -746,11 +760,11 @@
     const maxM = Math.max(...means, uts);
     const minA = 0;
     const maxA = Math.max(...amps, Se);
-    function xScale(m){ return pad + (m - minM) / (maxM - minM || 1) * w; }
-    function yScale(a){ return pad + (1 - (a - minA) / (maxA - minA || 1)) * h; }
+    const xScale = (m)=> pad + (m - minM) / (maxM - minM || 1) * w;
+    const yScale = (a)=> pad + (1 - (a - minA) / (maxA - minA || 1)) * h;
 
-    // Limite de fadiga (linha de falha infinita) conforme método
-    ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--line-haigh').trim();
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
     for (let i=0;i<=100;i++){
       const m = minM + (i/100)*(maxM - minM);
@@ -766,27 +780,26 @@
     }
     ctx.stroke();
 
-    // Pontos (σm, σa), tamanho ~ contagem
     for (const c of cycles) {
       const X = xScale(c.mean);
       const Y = yScale(c.amplitude);
       const r = Math.max(2, Math.min(8, c.count * 4));
-      ctx.fillStyle = "rgba(34,197,94,0.9)";
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--point-alloy').trim();
       ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI*2); ctx.fill();
     }
 
-    // Labels
-    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+    ctx.font = "12px ui-sans-serif";
     ctx.fillText("σm (MPa)", canvas.width/2 - 20, canvas.height - 6);
     ctx.save(); ctx.translate(10, canvas.height/2); ctx.rotate(-Math.PI/2);
     ctx.fillText("σa (MPa)", 0, 0); ctx.restore();
   }
 
-  // ===== UI / Estado =====
   function initMaterialSelect() {
     const sel = document.getElementById("materialSelect");
     sel.innerHTML = "";
-    for (const name of Object.keys(MATERIALS_DB)) {
+    const names = Object.keys(MATERIALS_DB).sort();
+    for (const name of names) {
       const opt = document.createElement("option");
       opt.value = name; opt.textContent = name; sel.appendChild(opt);
     }
@@ -828,12 +841,12 @@
     const textarea = document.getElementById("txtLoadCase");
     const text = textarea.value.trim();
     if (text.length > 0) {
-      const rows = parseCSV(text);
+      const rows = parseCSVFlexible(text);
       return stressSeriesFromRows(rows);
     }
     const files = fileInput.files;
-    if (files && files.length > 0) return null; // caller will read async
-    const rows = parseCSV(EXAMPLE_CSV);
+    if (files && files.length > 0) return null;
+    const rows = parseCSVFlexible(EXAMPLE_CSV);
     return stressSeriesFromRows(rows);
   }
 
@@ -876,12 +889,151 @@
     const textarea = document.getElementById("txtLoadCase");
     const text = textarea.value.trim();
     if (text.length > 0) {
-      try { return stressSeriesFromRows(parseCSV(text)); } catch { /* ignore */ }
+      try { return stressSeriesFromRows(parseCSVFlexible(text)); } catch { /* ignore */ }
     }
-    return stressSeriesFromRows(parseCSV(EXAMPLE_CSV));
+    return stressSeriesFromRows(parseCSVFlexible(EXAMPLE_CSV));
   }
 
-  // ===== Botões / handlers =====
+  function getFormNumber(id) {
+    const v = document.getElementById(id).value;
+    const x = parseFloat(v);
+    return isNaN(x) ? null : x;
+  }
+  function clearMaterialForm() {
+    for (const id of ["f_name","f_type","f_sut","f_sy","f_rho","f_cost","f_sf","f_b","f_se","f_q"]) {
+      document.getElementById(id).value = "";
+    }
+  }
+  function fillFormFromSelected() {
+    const name = document.getElementById("materialSelect").value;
+    if (!name || !MATERIALS_DB[name]) return;
+    const m = MATERIALS_DB[name];
+    document.getElementById("f_name").value = m.name;
+    document.getElementById("f_type").value = m.type;
+    document.getElementById("f_sut").value = m.ultimate_tensile_strength_MPa;
+    document.getElementById("f_sy").value = m.yield_strength_MPa;
+    document.getElementById("f_rho").value = m.density_kg_m3;
+    document.getElementById("f_cost").value = m.cost_per_kg_usd;
+    document.getElementById("f_sf").value = m.fatigue_strength_coeff_MPa;
+    document.getElementById("f_b").value = m.fatigue_exponent_b;
+    document.getElementById("f_se").value = m.endurance_limit_MPa;
+    document.getElementById("f_q").value = m.notch_sensitivity_q;
+  }
+  function addOrUpdateMaterial() {
+    const name = document.getElementById("f_name").value.trim();
+    const type = document.getElementById("f_type").value.trim();
+    const Sut = getFormNumber("f_sut");
+    const Sy  = getFormNumber("f_sy");
+    const rho = getFormNumber("f_rho");
+    const cost= getFormNumber("f_cost");
+    const sf  = getFormNumber("f_sf");
+    const b   = getFormNumber("f_b");
+    const Se  = getFormNumber("f_se");
+    const q   = getFormNumber("f_q");
+    if (!name || !type || Sut==null || Sy==null || rho==null || cost==null || sf==null || b==null || Se==null || q==null) {
+      alert("Preencha todos os campos do formulário."); return;
+    }
+    if (b >= 0) { alert("b (exponente de Basquin) deve ser negativo."); return; }
+    if (q < 0 || q > 1) { alert("q deve estar entre 0 e 1."); return; }
+    const exists = !!MATERIALS_DB[name];
+    if (exists && !confirm("Material já existe. Deseja atualizar?")) return;
+    MATERIALS_DB[name] = {
+      name, type,
+      ultimate_tensile_strength_MPa: Sut,
+      yield_strength_MPa: Sy,
+      density_kg_m3: rho,
+      cost_per_kg_usd: cost,
+      fatigue_strength_coeff_MPa: sf,
+      fatigue_exponent_b: b,
+      endurance_limit_MPa: Se,
+      notch_sensitivity_q: q
+    };
+    saveMaterials(MATERIALS_DB);
+    initMaterialSelect();
+    document.getElementById("materialSelect").value = name;
+    alert(exists ? "Material atualizado." : "Material adicionado.");
+  }
+
+  function loadLogo() {
+    const url = localStorage.getItem("simfadiga_logo");
+    const img = document.getElementById("appLogo");
+    if (url) img.src = url; else img.removeAttribute("src");
+  }
+  function setLogoFromFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => { localStorage.setItem("simfadiga_logo", reader.result); loadLogo(); };
+    reader.readAsDataURL(file);
+  }
+  function removeLogo() { localStorage.removeItem("simfadiga_logo"); loadLogo(); }
+
+  function resizeCanvases() {
+    const h = Math.max(200, Math.min(360, Math.floor(window.innerHeight * 0.35)));
+    for (const id of ["chartTime","chartHist","chartHaigh"]) {
+      const canvas = document.getElementById(id);
+      if (canvas) canvas.height = h;
+    }
+  }
+
+  async function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file);
+    });
+  }
+
+  function plotCurrent() {
+    try {
+      const series = currentSeriesOrExample();
+      plotSeries(document.getElementById("chartTime"), series);
+      const cycles = rainflowCount(series);
+      plotHistogram(document.getElementById("chartHist"), cycles);
+      const env = getEnvironment();
+      const marin = getMarin();
+      const params = getParams();
+      const mat = MATERIALS_DB[document.getElementById("materialSelect").value];
+      const info = evaluateMaterialLife(mat, env, series, params.method, params.kt, marin, params.fsLife);
+      plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, params.method, info.uts_eff, info.ys_eff);
+    } catch {/* ignore */}
+  }
+
+  let lastReport = null;
+
+  function boot() {
+    initMaterialSelect();
+    resizeCanvases(); window.addEventListener("resize", resizeCanvases);
+
+    loadLogo();
+    document.getElementById("btnSetLogo").addEventListener("click", () => document.getElementById("logoFile").click());
+    document.getElementById("logoFile").addEventListener("change", (e) => {
+      const files = e.target.files;
+      const f = (files && files.length) ? files[0] : null;
+      if (f) setLogoFromFile(f);
+    });
+    document.getElementById("btnRemoveLogo").addEventListener("click", removeLogo);
+
+    document.getElementById("btnUseExampleLoad").addEventListener("click", () => {
+      document.getElementById("txtLoadCase").value = EXAMPLE_CSV;
+      plotCurrent();
+    });
+    document.getElementById("btnPlotSeries").addEventListener("click", plotCurrent);
+    document.getElementById("btnSimulate").addEventListener("click", handleSimulate);
+    document.getElementById("btnSelect").addEventListener("click", handleSelect);
+    document.getElementById("btnDownloadReport").addEventListener("click", handleDownloadReport);
+    document.getElementById("btnReset").addEventListener("click", handleReset);
+
+    document.getElementById("btnApplyMaterials").addEventListener("click", applyMaterialsJson);
+    document.getElementById("btnExportMaterials").addEventListener("click", exportMaterialsJson);
+    document.getElementById("kaPreset").addEventListener("change", kaPresetChanged);
+    document.getElementById("kePreset").addEventListener("change", kePresetChanged);
+    document.getElementById("btnAddMaterial").addEventListener("click", addOrUpdateMaterial);
+    document.getElementById("btnFillFromSelected").addEventListener("click", fillFormFromSelected);
+    document.getElementById("btnClearForm").addEventListener("click", clearMaterialForm);
+
+    plotCurrent();
+  }
+
   async function handleSimulate() {
     const env = getEnvironment();
     const marin = getMarin();
@@ -892,20 +1044,18 @@
     let stressSeries = getStressSeriesFromInputs();
     if (stressSeries === null) {
       const txt = await readFileAsText(document.getElementById("fileLoadCase").files[0]);
-      stressSeries = stressSeriesFromRows(parseCSV(txt));
+      stressSeries = stressSeriesFromRows(parseCSVFlexible(txt));
     }
 
     const info = evaluateMaterialLife(material, env, stressSeries, method, kt, marin, fsLife);
     const { mass, cost } = estimateMassAndCost(material, isNaN(volume) ? null : volume);
     renderSimulateOutput(info, material, mass, cost, env, method, kt, lifeTarget, fsLife);
 
-    // Gráficos
     const cycles = rainflowCount(stressSeries);
     plotSeries(document.getElementById("chartTime"), stressSeries);
     plotHistogram(document.getElementById("chartHist"), cycles);
     plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, method, info.uts_eff, info.ys_eff);
 
-    // Guardar para relatório
     lastReport = { type: "simulate", timestamp: new Date().toISOString(), env, marin, params: { method, kt, volume, lifeTarget, fsLife }, material, info };
   }
 
@@ -917,13 +1067,12 @@
     let stressSeries = getStressSeriesFromInputs();
     if (stressSeries === null) {
       const txt = await readFileAsText(document.getElementById("fileLoadCase").files[0]);
-      stressSeries = stressSeriesFromRows(parseCSV(txt));
+      stressSeries = stressSeriesFromRows(parseCSVFlexible(txt));
     }
 
     const results = selectBestMaterials(MATERIALS_DB, env, stressSeries, lifeTarget, weights, isNaN(volume) ? null : volume, method, kt, marin, fsLife);
     renderSelectionOutput(results);
 
-    // Gráficos para série corrente
     const cycles = rainflowCount(stressSeries);
     const materialName = document.getElementById("materialSelect").value;
     const mat = MATERIALS_DB[materialName];
@@ -945,7 +1094,7 @@
   }
 
   function handleReset() {
-    if (!confirm("Resetar parâmetros e materiais para padrão?")) return;
+    if (!confirm("Resetar parâmetros e materiais para padrão (lista estendida)?")) return;
     MATERIALS_DB = JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
     saveMaterials(MATERIALS_DB);
     initMaterialSelect();
@@ -967,10 +1116,8 @@
     document.getElementById("kc").value = 1.0;
     document.getElementById("kd").value = 1.0;
     document.getElementById("ke").value = 1.0;
-    // limpar saídas
     document.getElementById("simulateOutput").textContent = "";
     document.getElementById("selectionOutput").textContent = "";
-    // limpar gráficos
     for (const id of ["chartTime","chartHist","chartHaigh"]) {
       const ctx = document.getElementById(id).getContext("2d");
       ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
@@ -988,9 +1135,7 @@
       saveMaterials(MATERIALS_DB);
       initMaterialSelect();
       alert("Materiais aplicados.");
-    } catch (e) {
-      alert("Erro no JSON: " + e.message);
-    }
+    } catch (e) { alert("Erro no JSON: " + e.message); }
   }
 
   function exportMaterialsJson() {
@@ -1005,8 +1150,7 @@
     const preset = document.getElementById("kaPreset").value;
     const materialName = document.getElementById("materialSelect").value;
     const mat = MATERIALS_DB[materialName];
-    const Sut = mat ? mat.ultimate_tensile_strength_MPa : 600; // MPa
-    // Fitted for steels: ka = a * (Sut)^b, with Sut in MPa; rough mapping:
+    const Sut = mat ? mat.ultimate_tensile_strength_MPa : 600;
     const presets = {
       "ground": { a: 1.58, b: -0.085 },
       "machined": { a: 4.51, b: -0.265 },
@@ -1019,60 +1163,11 @@
       document.getElementById("ka").value = Math.max(0.1, Math.min(1.0, ka)).toFixed(3);
     }
   }
-
   function kePresetChanged() {
     const val = document.getElementById("kePreset").value;
     if (val) document.getElementById("ke").value = val;
   }
 
-  // ===== Helpers =====
-  async function readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (e) => reject(e);
-      reader.readAsText(file);
-    });
-  }
-
-  function plotCurrent() {
-    try {
-      const series = currentSeriesOrExample();
-      plotSeries(document.getElementById("chartTime"), series);
-      const cycles = rainflowCount(series);
-      plotHistogram(document.getElementById("chartHist"), cycles);
-      // For Haigh line we need Se/UTS; use selected material with nominal env/marin defaults:
-      const env = getEnvironment();
-      const marin = getMarin();
-      const params = getParams();
-      const mat = MATERIALS_DB[document.getElementById("materialSelect").value];
-      const info = evaluateMaterialLife(mat, env, series, params.method, params.kt, marin, params.fsLife);
-      plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, params.method, info.uts_eff, info.ys_eff);
-    } catch {/* ignore */}
-  }
-
-  // ===== Estado de relatório =====
-  let lastReport = null;
-
-  // ===== Init =====
-  function boot() {
-    initMaterialSelect();
-    document.getElementById("btnUseExampleLoad").addEventListener("click", () => {
-      document.getElementById("txtLoadCase").value = EXAMPLE_CSV;
-      plotCurrent();
-    });
-    document.getElementById("btnPlotSeries").addEventListener("click", plotCurrent);
-    document.getElementById("btnSimulate").addEventListener("click", handleSimulate);
-    document.getElementById("btnSelect").addEventListener("click", handleSelect);
-    document.getElementById("btnDownloadReport").addEventListener("click", handleDownloadReport);
-    document.getElementById("btnReset").addEventListener("click", handleReset);
-    document.getElementById("btnApplyMaterials").addEventListener("click", applyMaterialsJson);
-    document.getElementById("btnExportMaterials").addEventListener("click", exportMaterialsJson);
-    document.getElementById("kaPreset").addEventListener("change", kaPresetChanged);
-    document.getElementById("kePreset").addEventListener("change", kePresetChanged);
-    // desenhar exemplo
-    plotCurrent();
-  }
   document.addEventListener("DOMContentLoaded", boot);
   </script>
 </body>

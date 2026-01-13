@@ -6,23 +6,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
   :root {
-    --bg: #0f172a;
-    --card: #111827;
-    --text: #e5e7eb;
-    --muted: #9ca3af;
-    --accent: #22c55e;
-    --accent-2: #06b6d4;
-    --accent-3: #f59e0b;
-    --border: #1f2937;
-    --danger: #ef4444;
+    /* Paleta tecnológica/industrial — base grafite */
+    --bg: #0b0e14;
+    --panel: #131821;
+    --card: #0f141c;
+    --text: #d1d5db;
+    --muted: #8a93a6;
+    --border: #232a33;
+
+    /* Botões discretos */
+    --btn-bg: #20252e;
+    --btn-fg: #cbd5e1;
+    --btn-border: #2e3540;
+    --btn-hover: #262b36;
+    --btn-active: #1b1f26;
+
+    /* Cores industriais (ANSI Z535 aproximadas) */
+    --safety-red:   #e4002b;
+    --safety-orng:  #ff7900;
+    --safety-yell:  #ffd100;
+    --safety-grn:   #009739;
+    --safety-blue:  #0077c8;
+
+    /* Aplicação nos gráficos (consistentes e discretas) */
+    --line-series:  rgba(0,119,200,0.90);  /* linha série temporal: azul industrial */
+    --bar-hist:     rgba(0,119,200,0.55);  /* barras histograma: azul com alpha */
+    --line-haigh:   rgba(255,121,0,0.9);   /* linha de limite: laranja/aviso */
+    --point-ok:     rgba(0,151,57,0.95);   /* pontos OK: verde segurança */
+    --point-warn:   rgba(255,209,0,0.95);  /* pontos alerta: amarelo */
+    --point-fail:   rgba(228,0,43,0.95);   /* pontos falha: vermelho */
+    --axes: #2a323e;                       /* eixos/contornos */
   }
 
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
-    background: linear-gradient(180deg, #0b1222, var(--bg));
     color: var(--text);
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    background:
+      radial-gradient(1200px 600px at 15% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+      radial-gradient(800px 400px at 85% 20%, rgba(255,255,255,0.02) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 22px),
+      var(--bg);
   }
 
   .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
@@ -30,107 +55,87 @@
   header {
     padding: 16px 0;
     border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
   }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
+  .brand { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .logo {
-    height: clamp(36px, 6vw, 60px);
-    width: clamp(36px, 6vw, 60px);
+    height: clamp(40px, 6vw, 64px);
+    width: clamp(40px, 6vw, 64px);
     object-fit: contain;
-    background: #0b1120;
-    border: 1px dashed #334155;
-    border-radius: 10px;
+    background: #0c111b;
+    border: 1px dashed #374151;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px #0c111b, inset 0 0 24px rgba(255,255,255,0.02);
   }
-  .title h1 {
-    margin: 0;
-    font-size: clamp(1.25rem, 3.5vw, 1.8rem);
-  }
-  .title p {
-    margin: 4px 0 0 0;
-    color: var(--muted);
-    font-size: clamp(.85rem, 2.5vw, 1rem);
-  }
-  .header-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-left: auto;
-  }
+  .title h1 { margin: 0; font-size: clamp(1.2rem, 3.4vw, 1.8rem); letter-spacing: .3px; }
+  .title p { margin: 4px 0 0 0; color: var(--muted); font-size: clamp(.85rem, 2.5vw, 1rem); }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 
   main { padding: 24px 0; }
   .panel {
     margin: 0 0 24px 0; padding: 16px;
-    background: rgba(17,24,39,.6); border: 1px solid var(--border); border-radius: 12px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 32px rgba(0,0,0,0.35);
   }
-  .panel h2 { margin: 0 0 12px 0; font-size: 1.2rem; color: #fff; }
+  .panel h2 { margin: 0 0 12px 0; font-size: 1.1rem; color: #e5e7eb; }
 
-  /* Grids responsivos */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
-  }
-  .charts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 16px; }
+  .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
 
   .card {
-    padding: 12px; background: rgba(3,10,28,.6);
-    border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 10px;
   }
-  .card h3 { margin: 0 0 8px 0; font-size: 1rem; color: #fff; }
+  .card h3 { margin: 0 0 8px 0; font-size: 1rem; color: #e5e7eb; }
   .card p { margin: 0 0 8px 0; color: var(--muted); }
   .small { font-size: .9rem; color: var(--muted); }
 
   .form { display: grid; gap: 8px; }
   .form.grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 12px; }
-  @media (max-width: 680px){ .form.grid-2 { grid-template-columns: 1fr; } }
+  @media (max-width: 720px){ .form.grid-2 { grid-template-columns: 1fr; } }
 
   label { display: grid; gap: 6px; font-size: .95rem; }
   input[type="number"], input[type="text"], select, textarea {
-    background: #0b1120; color: var(--text);
-    border: 1px solid var(--border); border-radius: 8px; padding: 8px;
+    background: #0c111b; color: var(--text);
+    border: 1px solid #1e2430; border-radius: 8px; padding: 8px; outline: none;
+  }
+  input[type="number"]:focus, input[type="text"]:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 2px #1f2a36; border-color: #2a3341;
   }
   textarea { width: 100%; min-height: 120px; }
   input[type="file"] { color: var(--text); }
 
   .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .muted { color: var(--muted); }
-
   .actions { margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+
   button {
-    background: var(--accent); color: #041016;
-    border: none; border-radius: 999px; padding: 10px 16px; font-weight: 700; cursor: pointer;
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 1px solid var(--btn-border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 4px 16px rgba(0,0,0,0.35);
+    transition: background .15s ease, border-color .15s ease, transform .05s ease;
   }
-  button:hover { filter: brightness(1.05); }
-  button#btnSelect { background: var(--accent-2); }
-  button.secondary { background: #334155; color: #e2e8f0; }
-  button.warn { background: var(--accent-3); color: #1f2937; }
-  button.danger { background: var(--danger); color: #081016; }
+  button:hover { background: var(--btn-hover); border-color: #39414c; }
+  button:active { background: var(--btn-active); transform: translateY(1px); }
+  button.secondary { background: #1a1f27; border-color: #2a313b; }
+  button.danger { background: #241d20; border-color: #3b2a2f; color: #d4b8bd; }
+  button#btnSelect { background: #1d222a; }
 
   .output {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    background: #0b1120; border: 1px solid var(--border);
+    background: #0c111b; border: 1px solid var(--border);
     border-radius: 8px; padding: 12px; min-height: 140px; white-space: pre-wrap;
   }
 
-  footer {
-    padding: 16px 0; border-top: 1px solid var(--border); color: var(--muted);
-  }
-  footer .container {
-    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-  }
+  footer { padding: 16px 0; border-top: 1px solid var(--border); color: var(--muted); }
+  footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
-  canvas {
-    width: 100%;
-    background: #0b1120; border: 1px solid var(--border); border-radius: 8px;
-  }
+  canvas { width: 100%; background: #0c111b; border: 1px solid var(--border); border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -394,13 +399,13 @@
 
   <footer>
     <div class="container">
-      <small>SimFadiga — HTML/JS v1.5.0 (demonstrativo). Calibre parâmetros para aplicações críticas.</small>
+      <small>SimFadiga — HTML/JS v1.7.0 (padrão industrial). Calibre parâmetros para aplicações críticas.</small>
       <small class="muted">Salvar/recuperar dados: localStorage. Exporte relatório para arquivamento.</small>
     </div>
   </footer>
 
   <script>
-  // ===== Banco de materiais (lista estendida por padrão + persistência) =====
+  /* ===== Banco de Materiais (lista estendida + persistência) ===== */
   const DEFAULT_MATERIALS_DB = {
     AISI_1020: { name:"AISI_1020", type:"steel", ultimate_tensile_strength_MPa:400, yield_strength_MPa:350, density_kg_m3:7850, cost_per_kg_usd:1.2, fatigue_strength_coeff_MPa:850, fatigue_exponent_b:-0.09, endurance_limit_MPa:200, notch_sensitivity_q:0.8 },
     AISI_1045: { name:"AISI_1045", type:"steel", ultimate_tensile_strength_MPa:620, yield_strength_MPa:530, density_kg_m3:7850, cost_per_kg_usd:1.5, fatigue_strength_coeff_MPa:1000, fatigue_exponent_b:-0.09, endurance_limit_MPa:270, notch_sensitivity_q:0.8 },
@@ -421,14 +426,12 @@
       if (!raw) return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
       const parsed = JSON.parse(raw);
       return parsed && typeof parsed === "object" ? parsed : JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
-    } catch {
-      return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
-    }
+    } catch { return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB)); }
   }
   function saveMaterials(db) { localStorage.setItem("simfadiga_materials", JSON.stringify(db, null, 2)); }
   let MATERIALS_DB = loadMaterials();
 
-  // ===== Utilitários =====
+  /* ===== Utils ===== */
   const fmt = {
     number: (x, digits = 3) => {
       if (x === Infinity) return "inf";
@@ -441,7 +444,9 @@
     money: (x) => (x == null ? "n/a" : `$${x.toFixed(2)}`),
     mass: (x) => (x == null ? "n/a" : `${x.toFixed(3)} kg`)
   };
+  function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
+  /* CSV flexível (delimitador e vírgula decimal) */
   function parseNumberFlexible(s) {
     if (s == null) return NaN;
     s = String(s).trim();
@@ -450,17 +455,11 @@
     const hasComma = s.includes(",");
     const hasDot = s.includes(".");
     if (hasComma && hasDot) {
-      if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
-        s = s.replace(/\./g, "").replace(",", ".");
-      } else {
-        s = s.replace(/,/g, "");
-      }
-    } else if (hasComma) {
-      s = s.replace(",", ".");
-    }
+      if (s.lastIndexOf(",") > s.lastIndexOf(".")) s = s.replace(/\./g, "").replace(",", ".");
+      else s = s.replace(/,/g, "");
+    } else if (hasComma) s = s.replace(",", ".");
     return parseFloat(s);
   }
-
   function detectDelimiter(line) {
     const candidates = [",", ";", "\t"];
     let best = ",", bestCount = -1;
@@ -470,7 +469,6 @@
     }
     return best;
   }
-
   function parseCSVFlexible(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
     if (lines.length === 0) return [];
@@ -489,12 +487,9 @@
     return rows;
   }
 
-  // ===== Ambiente =====
+  /* ===== Ambiente ===== */
   function fatigueStrengthModifier(env) {
-    const T = env.temperature_C;
-    const H = env.humidity_pct;
-    const C = env.corrosivity;
-    const S = env.salinity;
+    const T = env.temperature_C, H = env.humidity_pct, C = env.corrosivity, S = env.salinity;
     const alpha_T = -0.003, beta_H = -0.001, gamma_C = -0.20, delta_S = -0.10;
     const fT = 1.0 + alpha_T * Math.max(0.0, T - 20.0);
     const fH = 1.0 + beta_H  * Math.max(0.0, H - 50.0);
@@ -513,13 +508,11 @@
     };
   }
 
-  // ===== Rainflow (ASTM E1049-85 style) =====
+  /* ===== Rainflow (ASTM E1049-85 style) ===== */
   function extractTurningPointsASTM(series) {
     if (!series || series.length === 0) return [];
     const s = [series[0]];
-    for (let i = 1; i < series.length; i++) {
-      if (series[i] !== s[s.length - 1]) s.push(series[i]);
-    }
+    for (let i = 1; i < series.length; i++) if (series[i] !== s[s.length - 1]) s.push(series[i]);
     if (s.length < 2) return s.slice();
     const tp = [s[0]];
     for (let i = 1; i < s.length - 1; i++) {
@@ -568,7 +561,7 @@
     return aggregated;
   }
 
-  // ===== Correções de tensão média =====
+  /* ===== Correções de tensão média ===== */
   function goodmanCorrection(sigma_a, sigma_m, sigma_uts) {
     const denom = Math.max(1e-9, 1 - sigma_m / Math.max(1e-9, sigma_uts));
     return sigma_a / denom;
@@ -583,7 +576,7 @@
     return sigma_a / denom;
   }
 
-  // ===== Basquin + Miner =====
+  /* ===== Basquin + Miner ===== */
   function cyclesToFailure(sigma_a_corr, sigma_f_prime, b, Se) {
     if (Se > 0 && sigma_a_corr < Se) return Infinity;
     if (sigma_a_corr <= 0) return Infinity;
@@ -607,14 +600,13 @@
     return { D, life_missions };
   }
 
-  // ===== Seleção / avaliação =====
+  /* ===== Seleção / Avaliação ===== */
   function estimateMassAndCost(material, volume_m3) {
     if (volume_m3 == null || isNaN(volume_m3)) return { mass: null, cost: null };
     const mass = material.density_kg_m3 * volume_m3;
     const cost = mass * material.cost_per_kg_usd;
     return { mass, cost };
   }
-
   function marinSeFactor(params) {
     const ka = parseFloat(params.ka) || 1.0;
     const kb = parseFloat(params.kb) || 1.0;
@@ -623,7 +615,6 @@
     const ke = parseFloat(params.ke) || 1.0;
     return ka * kb * kc * kd * ke;
   }
-
   function evaluateMaterialLife(material, env, stressSeries, method="goodman", kt=1.0, marin={}, fsLife=1.0) {
     const envFactor = fatigueStrengthModifier(env);
     const matAdj = adjustMaterialForEnv(material, envFactor);
@@ -646,7 +637,6 @@
       marin_factor: k_marin
     };
   }
-
   function selectBestMaterials(db, env, stressSeries, lifeTarget, weights=[0.5, 0.5], volume_m3=null, method="goodman", kt=1.0, marin={}, fsLife=1.0) {
     const [w_cost, w_mass] = weights;
     const evaluated = [];
@@ -693,7 +683,7 @@
     return results;
   }
 
-  // ===== Séries e exemplo =====
+  /* ===== Série de exemplo ===== */
   const EXAMPLE_CSV = `time_s,stress_MPa
 0.0,0
 0.1,50
@@ -710,12 +700,12 @@
 1.2,70
 1.3,10
 1.4,0`;
-
   function stressSeriesFromRows(rows) { return rows.map(r => r.stress_MPa); }
 
-  // ===== Gráficos (Canvas 2D) com proteções e responsividade =====
+  /* ===== Gráficos (Canvas 2D) com cores industriais ===== */
   function drawAxes(ctx, x, y, w, h) {
-    ctx.strokeStyle = "#22304a"; ctx.lineWidth = 1;
+    ctx.strokeStyle = cssVar('--axes');
+    ctx.lineWidth = 1;
     ctx.beginPath(); ctx.rect(x+0.5, y+0.5, w-1, h-1); ctx.stroke();
   }
   function plotSeries(canvas, series) {
@@ -726,7 +716,8 @@
     const pad = 12, w = canvas.width - 2*pad, h = canvas.height - 2*pad;
     const minY = Math.min(...series), maxY = Math.max(...series);
     const rangeY = maxY - minY || 1;
-    ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = cssVar('--line-series');
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
     for (let i=0; i<series.length; i++) {
       const sx = pad + (i/(series.length-1))*w;
@@ -734,7 +725,8 @@
       if (i===0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
     }
     ctx.stroke();
-    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillStyle = cssVar('--muted');
+    ctx.font = "12px ui-sans-serif";
     ctx.fillText(`min=${fmt.number(minY)} MPa`, pad+6, canvas.height - 6);
     ctx.fillText(`max=${fmt.number(maxY)} MPa`, canvas.width - 140, 18);
   }
@@ -758,22 +750,34 @@
     const pad = 12, w = canvas.width - 2*pad, h = canvas.height - 2*pad;
     const maxCount = Math.max(...hist) || 1;
     const barW = w / bins * 0.9;
+    ctx.fillStyle = cssVar('--bar-hist');
     for (let i=0;i<bins;i++){
       const x = pad + i * (w / bins) + (w/bins - barW)/2;
       const hh = (hist[i] / maxCount) * h;
       const y = pad + (h - hh);
-      ctx.fillStyle = "#06b6d4";
       ctx.fillRect(x, y, barW, hh);
     }
-    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillStyle = cssVar('--muted');
+    ctx.font = "12px ui-sans-serif";
     ctx.fillText(`amp min=${fmt.number(min)} MPa`, pad+6, canvas.height - 6);
     ctx.fillText(`amp max=${fmt.number(max)} MPa`, canvas.width - 160, 18);
+  }
+  function allowedAmplitude(method, Se, uts, ys, m) {
+    if (Se <= 0) return 0;
+    if (method === "goodman") return Math.max(0, Se * (1 - m / Math.max(1e-9, uts)));
+    if (method === "haigh")   return Math.max(0, Se * (1 - m / Math.max(1e-9, ys)));
+    if (method === "gerber")  {
+      const ratio = m / Math.max(1e-9, uts);
+      return Math.max(0, Se * (1 - ratio*ratio));
+    }
+    return Se;
   }
   function plotHaigh(canvas, cycles, Se, method, uts, ys) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawAxes(ctx, 6, 6, canvas.width-12, canvas.height-12);
     if (!cycles || cycles.length === 0) return;
+
     const pad = 18, w = canvas.width - 2*pad, h = canvas.height - 2*pad;
     const means = cycles.map(c => c.mean);
     const amps  = cycles.map(c => c.amplitude);
@@ -784,37 +788,65 @@
     const xScale = (m)=> pad + (m - minM) / (maxM - minM || 1) * w;
     const yScale = (a)=> pad + (1 - (a - minA) / (maxA - minA || 1)) * h;
 
-    ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.5;
+    /* Linha do limite (ANSI laranja para atenção) */
+    ctx.strokeStyle = cssVar('--line-haigh');
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
     for (let i=0;i<=100;i++){
       const m = minM + (i/100)*(maxM - minM);
-      let aAllow = Se;
-      if (method === "goodman") aAllow = Se * Math.max(0, (1 - m / Math.max(1e-9, uts)));
-      else if (method === "haigh") aAllow = Se * Math.max(0, (1 - m / Math.max(1e-9, ys)));
-      else if (method === "gerber") {
-        const ratio = m / Math.max(1e-9, uts);
-        aAllow = Se * Math.max(0, (1 - ratio*ratio));
-      }
+      const aAllow = allowedAmplitude(method, Se, uts, ys, m);
       const X = xScale(m), Y = yScale(aAllow);
       if (i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
     }
     ctx.stroke();
 
+    /* Pontos coloridos por estado industrial: verde(ok), amarelo(warn), vermelho(falha) */
+    const warnRatio = 0.85; // ≥85% do limite vira amarelo
     for (const c of cycles) {
+      const aAllow = allowedAmplitude(method, Se, uts, ys, c.mean);
+      let color = cssVar('--point-ok');
+      if (aAllow <= 0) color = cssVar('--point-fail');
+      else {
+        const r = c.amplitude / aAllow;
+        if (r > 1.0) color = cssVar('--point-fail');
+        else if (r >= warnRatio) color = cssVar('--point-warn');
+      }
       const X = xScale(c.mean);
       const Y = yScale(c.amplitude);
-      const r = Math.max(2, Math.min(8, c.count * 4));
-      ctx.fillStyle = "rgba(34,197,94,0.9)";
-      ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI*2); ctx.fill();
+      const rpx = Math.max(2, Math.min(8, c.count * 4));
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(X, Y, rpx, 0, Math.PI*2); ctx.fill();
     }
 
-    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    /* Legenda compacta */
+    const legend = [
+      {label:"Limite (Se)", color: cssVar('--line-haigh'), type:"line"},
+      {label:"OK", color: cssVar('--point-ok')},
+      {label:"Alerta", color: cssVar('--point-warn')},
+      {label:"Falha", color: cssVar('--point-fail')}
+    ];
+    ctx.font = "12px ui-sans-serif";
+    let lx = pad + 6, ly = pad + 12;
+    for (const item of legend) {
+      if (item.type === "line") {
+        ctx.strokeStyle = item.color; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+20, ly); ctx.stroke();
+        ctx.fillStyle = cssVar('--muted'); ctx.fillText(item.label, lx+26, ly+4);
+      } else {
+        ctx.fillStyle = item.color;
+        ctx.beginPath(); ctx.arc(lx+10, ly, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = cssVar('--muted'); ctx.fillText(item.label, lx+20, ly+4);
+      }
+      ly += 16;
+    }
+
+    ctx.fillStyle = cssVar('--muted');
     ctx.fillText("σm (MPa)", canvas.width/2 - 20, canvas.height - 6);
     ctx.save(); ctx.translate(10, canvas.height/2); ctx.rotate(-Math.PI/2);
     ctx.fillText("σa (MPa)", 0, 0); ctx.restore();
   }
 
-  // ===== UI / Estado =====
+  /* ===== UI / Estado ===== */
   function initMaterialSelect() {
     const sel = document.getElementById("materialSelect");
     sel.innerHTML = "";
@@ -824,7 +856,6 @@
       opt.value = name; opt.textContent = name; sel.appendChild(opt);
     }
   }
-
   function getEnvironment() {
     return {
       temperature_C: parseFloat(document.getElementById("envTemp").value),
@@ -855,19 +886,14 @@
       ]
     };
   }
-
   function getStressSeriesFromInputs() {
     const fileInput = document.getElementById("fileLoadCase");
     const textarea = document.getElementById("txtLoadCase");
     const text = textarea.value.trim();
-    if (text.length > 0) {
-      const rows = parseCSVFlexible(text);
-      return stressSeriesFromRows(rows);
-    }
+    if (text.length > 0) return stressSeriesFromRows(parseCSVFlexible(text));
     const files = fileInput.files;
     if (files && files.length > 0) return null;
-    const rows = parseCSVFlexible(EXAMPLE_CSV);
-    return stressSeriesFromRows(rows);
+    return stressSeriesFromRows(parseCSVFlexible(EXAMPLE_CSV));
   }
 
   function renderSimulateOutput(info, material, mass, cost, env, method, kt, lifeTarget, fsLife) {
@@ -889,13 +915,9 @@
     if (cost != null) lines.push(`Custo estimado: ${fmt.money(cost)} por peça`);
     div.textContent = lines.join("\n");
   }
-
   function renderSelectionOutput(results) {
     const div = document.getElementById("selectionOutput");
-    if (!results || results.length === 0) {
-      div.textContent = "Nenhum material atende à meta de vida especificada (com FS).";
-      return;
-    }
+    if (!results || results.length === 0) { div.textContent = "Nenhum material atende à meta de vida especificada (com FS)."; return; }
     const lines = [];
     lines.push("=== SimFadiga - Seleção de Materiais ===");
     lines.push("Ranking por score (menor é melhor):");
@@ -904,30 +926,18 @@
     });
     div.textContent = lines.join("\n");
   }
-
   function currentSeriesOrExample() {
     const textarea = document.getElementById("txtLoadCase");
     const text = textarea.value.trim();
-    if (text.length > 0) {
-      try { return stressSeriesFromRows(parseCSVFlexible(text)); } catch { /* ignore */ }
-    }
+    if (text.length > 0) { try { return stressSeriesFromRows(parseCSVFlexible(text)); } catch {} }
     return stressSeriesFromRows(parseCSVFlexible(EXAMPLE_CSV));
   }
 
-  // ===== Formulário de novo material =====
-  function getFormNumber(id) {
-    const v = document.getElementById(id).value;
-    const x = parseFloat(v);
-    return isNaN(x) ? null : x;
-  }
-  function clearMaterialForm() {
-    for (const id of ["f_name","f_type","f_sut","f_sy","f_rho","f_cost","f_sf","f_b","f_se","f_q"]) {
-      document.getElementById(id).value = "";
-    }
-  }
+  /* ===== Formulário Materiais ===== */
+  function getFormNumber(id) { const v = document.getElementById(id).value; const x = parseFloat(v); return isNaN(x) ? null : x; }
+  function clearMaterialForm() { for (const id of ["f_name","f_type","f_sut","f_sy","f_rho","f_cost","f_sf","f_b","f_se","f_q"]) document.getElementById(id).value = ""; }
   function fillFormFromSelected() {
-    const name = document.getElementById("materialSelect").value;
-    if (!name || !MATERIALS_DB[name]) return;
+    const name = document.getElementById("materialSelect").value; if (!name || !MATERIALS_DB[name]) return;
     const m = MATERIALS_DB[name];
     document.getElementById("f_name").value = m.name;
     document.getElementById("f_type").value = m.type;
@@ -943,17 +953,9 @@
   function addOrUpdateMaterial() {
     const name = document.getElementById("f_name").value.trim();
     const type = document.getElementById("f_type").value.trim();
-    const Sut = getFormNumber("f_sut");
-    const Sy  = getFormNumber("f_sy");
-    const rho = getFormNumber("f_rho");
-    const cost= getFormNumber("f_cost");
-    const sf  = getFormNumber("f_sf");
-    const b   = getFormNumber("f_b");
-    const Se  = getFormNumber("f_se");
-    const q   = getFormNumber("f_q");
-    if (!name || !type || Sut==null || Sy==null || rho==null || cost==null || sf==null || b==null || Se==null || q==null) {
-      alert("Preencha todos os campos do formulário."); return;
-    }
+    const Sut = getFormNumber("f_sut"), Sy=getFormNumber("f_sy"), rho=getFormNumber("f_rho"), cost=getFormNumber("f_cost");
+    const sf=getFormNumber("f_sf"), b=getFormNumber("f_b"), Se=getFormNumber("f_se"), q=getFormNumber("f_q");
+    if (!name || !type || Sut==null || Sy==null || rho==null || cost==null || sf==null || b==null || Se==null || q==null) { alert("Preencha todos os campos do formulário."); return; }
     if (b >= 0) { alert("b (exponente de Basquin) deve ser negativo."); return; }
     if (q < 0 || q > 1) { alert("q deve estar entre 0 e 1."); return; }
     const exists = !!MATERIALS_DB[name];
@@ -969,32 +971,16 @@
       endurance_limit_MPa: Se,
       notch_sensitivity_q: q
     };
-    saveMaterials(MATERIALS_DB);
-    initMaterialSelect();
-    document.getElementById("materialSelect").value = name;
+    saveMaterials(MATERIALS_DB); initMaterialSelect(); document.getElementById("materialSelect").value = name;
     alert(exists ? "Material atualizado." : "Material adicionado.");
   }
 
-  // ===== Logo (upload, persistência) =====
-  function loadLogo() {
-    const url = localStorage.getItem("simfadiga_logo");
-    const img = document.getElementById("appLogo");
-    if (url) img.src = url; else img.removeAttribute("src");
-  }
-  function setLogoFromFile(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      localStorage.setItem("simfadiga_logo", reader.result);
-      loadLogo();
-    };
-    reader.readAsDataURL(file);
-  }
-  function removeLogo() {
-    localStorage.removeItem("simfadiga_logo");
-    loadLogo();
-  }
+  /* ===== Logo ===== */
+  function loadLogo() { const url = localStorage.getItem("simfadiga_logo"); const img = document.getElementById("appLogo"); if (url) img.src = url; else img.removeAttribute("src"); }
+  function setLogoFromFile(file) { const reader = new FileReader(); reader.onload = ()=>{ localStorage.setItem("simfadiga_logo", reader.result); loadLogo(); }; reader.readAsDataURL(file); }
+  function removeLogo() { localStorage.removeItem("simfadiga_logo"); loadLogo(); }
 
-  // ===== Responsividade dos gráficos =====
+  /* ===== Layout responsivo dos canvases ===== */
   function resizeCanvases() {
     const h = Math.max(200, Math.min(360, Math.floor(window.innerHeight * 0.35)));
     for (const id of ["chartTime","chartHist","chartHaigh"]) {
@@ -1003,57 +989,66 @@
     }
   }
 
-  // ===== Botões / handlers =====
-  async function handleSimulate() {
-    const env = getEnvironment();
-    const marin = getMarin();
-    const { method, kt, volume, lifeTarget, fsLife } = getParams();
-    const materialName = document.getElementById("materialSelect").value;
-    const material = MATERIALS_DB[materialName];
+  /* ===== Handlers ===== */
+  async function readFileAsText(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = e => reject(e); reader.readAsText(file); }); }
+  function plotCurrent() {
+    try {
+      const series = currentSeriesOrExample();
+      plotSeries(document.getElementById("chartTime"), series);
+      const cycles = rainflowCount(series);
+      plotHistogram(document.getElementById("chartHist"), cycles);
+      const env = getEnvironment(), marin = getMarin(), params = getParams();
+      const mat = MATERIALS_DB[document.getElementById("materialSelect").value];
+      const info = evaluateMaterialLife(mat, env, series, params.method, params.kt, marin, params.fsLife);
+      plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, params.method, info.uts_eff, info.ys_eff);
+    } catch {}
+  }
+  let lastReport = null;
 
-    let stressSeries = getStressSeriesFromInputs();
-    if (stressSeries === null) {
+  async function handleSimulate() {
+    const env = getEnvironment(), marin = getMarin();
+    const { method, kt, volume, lifeTarget, fsLife } = getParams();
+    const material = MATERIALS_DB[document.getElementById("materialSelect").value];
+
+    let series = getStressSeriesFromInputs();
+    if (series === null) {
       const txt = await readFileAsText(document.getElementById("fileLoadCase").files[0]);
-      stressSeries = stressSeriesFromRows(parseCSVFlexible(txt));
+      series = stressSeriesFromRows(parseCSVFlexible(txt));
     }
 
-    const info = evaluateMaterialLife(material, env, stressSeries, method, kt, marin, fsLife);
+    const info = evaluateMaterialLife(material, env, series, method, kt, marin, fsLife);
     const { mass, cost } = estimateMassAndCost(material, isNaN(volume) ? null : volume);
     renderSimulateOutput(info, material, mass, cost, env, method, kt, lifeTarget, fsLife);
 
-    const cycles = rainflowCount(stressSeries);
-    plotSeries(document.getElementById("chartTime"), stressSeries);
+    const cycles = rainflowCount(series);
+    plotSeries(document.getElementById("chartTime"), series);
     plotHistogram(document.getElementById("chartHist"), cycles);
     plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, method, info.uts_eff, info.ys_eff);
 
     lastReport = { type: "simulate", timestamp: new Date().toISOString(), env, marin, params: { method, kt, volume, lifeTarget, fsLife }, material, info };
   }
-
   async function handleSelect() {
-    const env = getEnvironment();
-    const marin = getMarin();
+    const env = getEnvironment(), marin = getMarin();
     const { method, kt, volume, lifeTarget, weights, fsLife } = getParams();
 
-    let stressSeries = getStressSeriesFromInputs();
-    if (stressSeries === null) {
+    let series = getStressSeriesFromInputs();
+    if (series === null) {
       const txt = await readFileAsText(document.getElementById("fileLoadCase").files[0]);
-      stressSeries = stressSeriesFromRows(parseCSVFlexible(txt));
+      series = stressSeriesFromRows(parseCSVFlexible(txt));
     }
 
-    const results = selectBestMaterials(MATERIALS_DB, env, stressSeries, lifeTarget, weights, isNaN(volume) ? null : volume, method, kt, marin, fsLife);
+    const results = selectBestMaterials(MATERIALS_DB, env, series, lifeTarget, weights, isNaN(volume) ? null : volume, method, kt, marin, fsLife);
     renderSelectionOutput(results);
 
-    const cycles = rainflowCount(stressSeries);
-    const materialName = document.getElementById("materialSelect").value;
-    const mat = MATERIALS_DB[materialName];
-    const infoTmp = evaluateMaterialLife(mat, env, stressSeries, method, kt, marin, fsLife);
-    plotSeries(document.getElementById("chartTime"), stressSeries);
+    const cycles = rainflowCount(series);
+    const mat = MATERIALS_DB[document.getElementById("materialSelect").value];
+    const infoTmp = evaluateMaterialLife(mat, env, series, method, kt, marin, fsLife);
+    plotSeries(document.getElementById("chartTime"), series);
     plotHistogram(document.getElementById("chartHist"), cycles);
     plotHaigh(document.getElementById("chartHaigh"), cycles, infoTmp.Se_eff, method, infoTmp.uts_eff, infoTmp.ys_eff);
 
     lastReport = { type: "select", timestamp: new Date().toISOString(), env, marin, params: { method, kt, volume, lifeTarget, weights, fsLife }, results };
   }
-
   function handleDownloadReport() {
     if (!lastReport) { alert("Execute uma simulação ou seleção antes de exportar."); return; }
     const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: "application/json" });
@@ -1062,7 +1057,6 @@
     a.href = url; a.download = `SimFadiga_Report_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
     a.click(); URL.revokeObjectURL(url);
   }
-
   function handleReset() {
     if (!confirm("Resetar parâmetros e materiais para padrão (lista estendida)?")) return;
     MATERIALS_DB = JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
@@ -1094,7 +1088,6 @@
     }
     lastReport = null;
   }
-
   function applyMaterialsJson() {
     const txt = document.getElementById("materialsJson").value.trim();
     if (!txt) { alert("Cole JSON de materiais."); return; }
@@ -1105,11 +1098,8 @@
       saveMaterials(MATERIALS_DB);
       initMaterialSelect();
       alert("Materiais aplicados.");
-    } catch (e) {
-      alert("Erro no JSON: " + e.message);
-    }
+    } catch (e) { alert("Erro no JSON: " + e.message); }
   }
-
   function exportMaterialsJson() {
     const blob = new Blob([JSON.stringify(MATERIALS_DB, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -1117,7 +1107,6 @@
     a.href = url; a.download = "materials_db.json";
     a.click(); URL.revokeObjectURL(url);
   }
-
   function kaPresetChanged() {
     const preset = document.getElementById("kaPreset").value;
     const materialName = document.getElementById("materialSelect").value;
@@ -1135,63 +1124,27 @@
       document.getElementById("ka").value = Math.max(0.1, Math.min(1.0, ka)).toFixed(3);
     }
   }
-  function kePresetChanged() {
-    const val = document.getElementById("kePreset").value;
-    if (val) document.getElementById("ke").value = val;
-  }
+  function kePresetChanged() { const val = document.getElementById("kePreset").value; if (val) document.getElementById("ke").value = val; }
 
-  async function readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (e) => reject(e);
-      reader.readAsText(file);
-    });
-  }
-
-  function plotCurrent() {
-    try {
-      const series = currentSeriesOrExample();
-      plotSeries(document.getElementById("chartTime"), series);
-      const cycles = rainflowCount(series);
-      plotHistogram(document.getElementById("chartHist"), cycles);
-      const env = getEnvironment();
-      const marin = getMarin();
-      const params = getParams();
-      const mat = MATERIALS_DB[document.getElementById("materialSelect").value];
-      const info = evaluateMaterialLife(mat, env, series, params.method, params.kt, marin, params.fsLife);
-      plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, params.method, info.uts_eff, info.ys_eff);
-    } catch {/* ignore */}
-  }
-
-  // ===== Estado de relatório =====
-  let lastReport = null;
-
-  // ===== Init =====
+  /* ===== Boot ===== */
   function boot() {
     initMaterialSelect();
     resizeCanvases(); window.addEventListener("resize", resizeCanvases);
 
-    // Logo
     loadLogo();
     document.getElementById("btnSetLogo").addEventListener("click", () => document.getElementById("logoFile").click());
     document.getElementById("logoFile").addEventListener("change", (e) => {
-      const f = e.target.files?.[0]; if (f) setLogoFromFile(f);
+      const files = e.target.files; const f = (files && files.length) ? files[0] : null; if (f) setLogoFromFile(f);
     });
     document.getElementById("btnRemoveLogo").addEventListener("click", removeLogo);
 
-    // Dados
-    document.getElementById("btnUseExampleLoad").addEventListener("click", () => {
-      document.getElementById("txtLoadCase").value = EXAMPLE_CSV;
-      plotCurrent();
-    });
+    document.getElementById("btnUseExampleLoad").addEventListener("click", () => { document.getElementById("txtLoadCase").value = EXAMPLE_CSV; plotCurrent(); });
     document.getElementById("btnPlotSeries").addEventListener("click", plotCurrent);
     document.getElementById("btnSimulate").addEventListener("click", handleSimulate);
     document.getElementById("btnSelect").addEventListener("click", handleSelect);
     document.getElementById("btnDownloadReport").addEventListener("click", handleDownloadReport);
     document.getElementById("btnReset").addEventListener("click", handleReset);
 
-    // Materiais
     document.getElementById("btnApplyMaterials").addEventListener("click", applyMaterialsJson);
     document.getElementById("btnExportMaterials").addEventListener("click", exportMaterialsJson);
     document.getElementById("kaPreset").addEventListener("change", kaPresetChanged);
@@ -1200,7 +1153,6 @@
     document.getElementById("btnFillFromSelected").addEventListener("click", fillFormFromSelected);
     document.getElementById("btnClearForm").addEventListener("click", clearMaterialForm);
 
-    // Primeiros gráficos
     plotCurrent();
   }
   document.addEventListener("DOMContentLoaded", boot);

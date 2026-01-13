@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>SimFadiga — Simulador Avançado de Fadiga e Seleção de Materiais (HTML/JS)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+  :root {
+    --bg: #0f172a;
+    --card: #111827;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --accent: #22c55e;
+    --accent-2: #06b6d4;
+    --accent-3: #f59e0b;
+    --border: #1f2937;
+    --danger: #ef4444;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: linear-gradient(180deg, #0b1222, var(--bg));
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  }
+
+  header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  h1 { margin: 0 0 8px 0; font-size: 1.6rem; }
+  header p { margin: 4px 0 0 0; color: var(--muted); }
+
+  main { padding: 24px; }
+  .panel {
+    margin: 0 0 24px 0;
+    padding: 16px;
+    background: rgba(17,24,39,.6);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .panel h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.2rem;
+    color: #fff;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    padding: 12px;
+    background: rgba(3,10,28,.6);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .card h3 { margin: 0 0 8px 0; font-size: 1rem; color: #fff; }
+  .card p { margin: 0 0 8px 0; color: var(--muted); }
+  .small { font-size: .9rem; color: var(--muted); }
+
+  .form { display: grid; gap: 8px; }
+  label { display: grid; gap: 6px; font-size: .95rem; }
+  input[type="number"], input[type="text"], select, textarea {
+    background: #0b1120; color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px;
+  }
+  textarea { width: 100%; }
+  input[type="file"] { color: var(--text); }
+
+  .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .muted { color: var(--muted); }
+
+  .actions {
+    margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  button {
+    background: var(--accent); color: #041016;
+    border: none; border-radius: 999px;
+    padding: 10px 16px; font-weight: 700; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.05); }
+  button#btnSelect { background: var(--accent-2); }
+  button.secondary { background: #334155; color: #e2e8f0; }
+  button.warn { background: var(--accent-3); color: #1f2937; }
+  button.danger { background: var(--danger); color: #081016; }
+
+  .output {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    background: #0b1120; border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; min-height: 140px;
+    white-space: pre-wrap;
+  }
+
+  footer {
+    padding: 16px 24px; border-top: 1px solid var(--border); color: var(--muted);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+
+  .weights { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 1100px) { .charts { grid-template-columns: 1fr; } }
+  canvas { width: 100%; height: 260px; background: #0b1120; border: 1px solid var(--border); border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SimFadiga — Simulador Avançado de Fadiga e Seleção de Materiais</h1>
+    <p>Simule vida em serviço e selecione materiais considerando ambiente, correção de tensão média (Goodman/Haigh/Gerber), fatores de Marin, e custo/massa.</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Entrada de Dados</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Histórico de Tensões (CSV)</h3>
+          <p>CSV com colunas: <code>stress_MPa</code> e opcional <code>time_s</code>.</p>
+          <div class="inline">
+            <input type="file" id="fileLoadCase" accept=".csv" />
+            <button id="btnUseExampleLoad" class="secondary">Usar exemplo</button>
+            <button id="btnPlotSeries" class="secondary">Plotar série</button>
+          </div>
+          <textarea id="txtLoadCase" rows="10" placeholder="Cole CSV aqui (opcional)"></textarea>
+        </div>
+
+        <div class="card">
+          <h3>Ambiente</h3>
+          <div class="form">
+            <label>Temperatura [°C]
+              <input type="number" id="envTemp" value="60" step="0.1" />
+            </label>
+            <label>Umidade [%]
+              <input type="number" id="envHumidity" value="80" step="1" />
+            </label>
+            <label>Corrosividade [0–1]
+              <input type="number" id="envCorrosivity" value="0.6" min="0" max="1" step="0.01" />
+            </label>
+            <label>Salinidade [0–1]
+              <input type="number" id="envSalinity" value="0.3" min="0" max="1" step="0.01" />
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Parâmetros de Fadiga</h3>
+          <div class="form">
+            <label>Método de correção
+              <select id="fatigueMethod">
+                <option value="goodman" selected>Goodman</option>
+                <option value="haigh">Haigh</option>
+                <option value="gerber">Gerber</option>
+              </select>
+            </label>
+            <label>Fator de segurança na vida (FS)
+              <input type="number" id="fsLife" value="1.0" min="1" step="0.1" />
+            </label>
+            <label>Fator de concentração de tensão (Kt)
+              <input type="number" id="kt" value="1.0" step="0.01" />
+            </label>
+            <label>Volume da peça [m³] (para massa/custo)
+              <input type="number" id="volume" value="0.8" step="0.001" />
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Fatores de Marin (aplicados ao Se)</h3>
+          <div class="form">
+            <label>ka — acabamento superficial
+              <div class="inline">
+                <input type="number" id="ka" value="1.0" step="0.01" />
+                <select id="kaPreset" class="secondary">
+                  <option value="">preset (aço)</option>
+                  <option value="ground">ground</option>
+                  <option value="machined">machined</option>
+                  <option value="hot-rolled">hot-rolled</option>
+                  <option value="as-forged">as-forged</option>
+                </select>
+              </div>
+              <span class="muted">Dica: selecione um preset e ajuste conforme UTS; valor final preenche em ka.</span>
+            </label>
+            <label>kb — tamanho
+              <input type="number" id="kb" value="1.0" step="0.01" />
+            </label>
+            <label>kc — tipo de carregamento
+              <select id="kc">
+                <option value="1.0" selected>Bending (1.00)</option>
+                <option value="0.85">Axial (0.85)</option>
+                <option value="0.59">Torsion (0.59)</option>
+              </select>
+            </label>
+            <label>kd — temperatura
+              <input type="number" id="kd" value="1.0" step="0.01" />
+            </label>
+            <label>ke — confiabilidade
+              <div class="inline">
+                <input type="number" id="ke" value="1.0" step="0.01" />
+                <select id="kePreset" class="secondary">
+                  <option value="">preset</option>
+                  <option value="1.000">50% (1.000)</option>
+                  <option value="0.897">90% (0.897)</option>
+                  <option value="0.868">95% (0.868)</option>
+                  <option value="0.814">99% (0.814)</option>
+                  <option value="0.753">99.9% (0.753)</option>
+                </select>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Materiais</h3>
+          <div class="form">
+            <label>Material para simulação
+              <select id="materialSelect"></select>
+            </label>
+            <details>
+              <summary>Adicionar/editar materiais (JSON)</summary>
+              <textarea id="materialsJson" rows="12" placeholder='{"NovoMaterial": {...}}'></textarea>
+              <div class="inline">
+                <button id="btnApplyMaterials" class="secondary">Aplicar JSON</button>
+                <button id="btnExportMaterials" class="secondary">Exportar JSON</button>
+              </div>
+              <p class="small">Campos suportados por material: name, type, ultimate_tensile_strength_MPa, yield_strength_MPa, density_kg_m3, cost_per_kg_usd, fatigue_strength_coeff_MPa (σf'), fatigue_exponent_b (b &lt; 0), endurance_limit_MPa (Se), notch_sensitivity_q.</p>
+            </details>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Seleção de Materiais</h3>
+          <div class="form">
+            <label>Meta de vida (missões/ciclos equivalentes)
+              <input type="number" id="lifeTarget" value="1000000" step="1000" />
+            </label>
+            <label>Pesos [custo, massa]
+              <div class="weights">
+                <input type="number" id="wCost" value="0.6" min="0" max="1" step="0.01" />
+                <input type="number" id="wMass" value="0.4" min="0" max="1" step="0.01" />
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnSimulate">Simular Material</button>
+        <button id="btnSelect">Selecionar Materiais</button>
+        <button id="btnDownloadReport" class="secondary">Baixar Relatório</button>
+        <button id="btnReset" class="danger">Reset</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Resultados e Gráficos</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Relatório de Simulação</h3>
+          <div id="simulateOutput" class="output"></div>
+        </div>
+        <div class="card">
+          <h3>Ranking de Seleção</h3>
+          <div id="selectionOutput" class="output"></div>
+        </div>
+      </div>
+      <div class="charts" style="margin-top:12px;">
+        <div>
+          <h3 class="small">Série Temporal (MPa)</h3>
+          <canvas id="chartTime" width="600" height="260"></canvas>
+        </div>
+        <div>
+          <h3 class="small">Histograma de Amplitude (rainflow)</h3>
+          <canvas id="chartHist" width="600" height="260"></canvas>
+        </div>
+        <div>
+          <h3 class="small">Diagrama de Haigh (σm vs σa)</h3>
+          <canvas id="chartHaigh" width="600" height="260"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Ajuda</h2>
+      <details>
+        <summary>Formato CSV de carga (exemplo)</summary>
+        <pre><code>time_s,stress_MPa
+0.0,0
+0.1,50
+0.2,120
+0.3,30
+0.4,140
+0.5,40
+0.6,160
+0.7,60
+0.8,20
+0.9,0
+1.0,80
+1.1,150
+1.2,70
+1.3,10
+1.4,0</code></pre>
+      </details>
+      <details>
+        <summary>Notas de modelo e limitações</summary>
+        <ul>
+          <li>Rainflow implementado de forma simplificada (próximo a ASTM E1049-85). Para uso crítico, valide com espectros padrão.</li>
+          <li>Marin afeta Se (endurance). Fatores ambientais também afetam σf' e Se.</li>
+          <li>Gerber/Goodman/Haigh para correção de tensão média; escolha conforme material e regime.</li>
+          <li>FS na vida: exige vida ≥ FS × meta. Ajuste conforme política de projeto.</li>
+          <li>LCF, multiaxial, crescimento de trinca e efeitos de sequência não estão incluídos neste arquivo (podem ser adicionados).</li>
+        </ul>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <small>SimFadiga — HTML/JS v1.2.0 (demonstrativo). Calibre parâmetros para aplicações críticas.</small>
+    <small class="muted">Salvar/recuperar dados: localStorage. Exporte relatório para arquivamento.</small>
+  </footer>
+
+  <script>
+  // ===== Banco de materiais (exemplo + persistência) =====
+  const DEFAULT_MATERIALS_DB = {
+    AISI_1045: {
+      name: "AISI_1045",
+      type: "steel",
+      ultimate_tensile_strength_MPa: 620,
+      yield_strength_MPa: 530,
+      density_kg_m3: 7850,
+      cost_per_kg_usd: 1.5,
+      fatigue_strength_coeff_MPa: 1000, // σf'
+      fatigue_exponent_b: -0.09,        // Basquin (negativo)
+      endurance_limit_MPa: 270,         // Se
+      notch_sensitivity_q: 0.8
+    },
+    Al_7075_T6: {
+      name: "Al_7075_T6",
+      type: "aluminum",
+      ultimate_tensile_strength_MPa: 570,
+      yield_strength_MPa: 500,
+      density_kg_m3: 2810,
+      cost_per_kg_usd: 5.0,
+      fatigue_strength_coeff_MPa: 850,
+      fatigue_exponent_b: -0.11,
+      endurance_limit_MPa: 0,          // alumínio sem Se definido
+      notch_sensitivity_q: 0.6
+    },
+    Ti_6Al_4V: {
+      name: "Ti_6Al_4V",
+      type: "titanium",
+      ultimate_tensile_strength_MPa: 900,
+      yield_strength_MPa: 830,
+      density_kg_m3: 4420,
+      cost_per_kg_usd: 30.0,
+      fatigue_strength_coeff_MPa: 1200,
+      fatigue_exponent_b: -0.08,
+      endurance_limit_MPa: 500,
+      notch_sensitivity_q: 0.9
+    }
+  };
+  function loadMaterials() {
+    try {
+      const raw = localStorage.getItem("simfadiga_materials");
+      if (!raw) return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
+    } catch {
+      return JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
+    }
+  }
+  function saveMaterials(db) {
+    localStorage.setItem("simfadiga_materials", JSON.stringify(db, null, 2));
+  }
+  let MATERIALS_DB = loadMaterials();
+
+  // ===== Utilitários =====
+  const fmt = {
+    number: (x, digits = 3) => {
+      if (x === Infinity) return "inf";
+      if (!isFinite(x)) return String(x);
+      if (x === 0) return "0";
+      const absx = Math.abs(x);
+      if (absx >= 1e4 || absx < 1e-3) return x.toExponential(digits);
+      return x.toFixed(digits);
+    },
+    money: (x) => (x == null ? "n/a" : `$${x.toFixed(2)}`),
+    mass: (x) => (x == null ? "n/a" : `${x.toFixed(3)} kg`)
+  };
+
+  function parseCSV(text) {
+    // Retorna array de objetos { time_s?, stress_MPa }
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length === 0) return [];
+    const header = lines[0].split(",").map(s => s.trim());
+    const idxStress = header.indexOf("stress_MPa");
+    const idxTime = header.indexOf("time_s");
+    if (idxStress === -1) throw new Error("CSV deve conter coluna 'stress_MPa'.");
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(",").map(s => s.trim());
+      const stress = parseFloat(cols[idxStress]);
+      const time = idxTime !== -1 ? parseFloat(cols[idxTime]) : undefined;
+      if (!isNaN(stress)) rows.push({ stress_MPa: stress, time_s: time });
+    }
+    return rows;
+  }
+
+  // ===== Ambiente =====
+  function fatigueStrengthModifier(env) {
+    // Heurístico: temperatura/umidade/corrosão/salinidade reduzem; clamp [0.1, 1.2]
+    const T = env.temperature_C;
+    const H = env.humidity_pct;
+    const C = env.corrosivity;
+    const S = env.salinity;
+    const alpha_T = -0.003;  // -0.3% por °C acima de 20
+    const beta_H  = -0.001;  // -0.1% por ponto % acima de 50
+    const gamma_C = -0.20;   // corrosividade forte: -20% em C=1
+    const delta_S = -0.10;   // salinidade moderada: -10% em S=1
+    const fT = 1.0 + alpha_T * Math.max(0.0, T - 20.0);
+    const fH = 1.0 + beta_H  * Math.max(0.0, H - 50.0);
+    const fC = 1.0 + gamma_C * C;
+    const fS = 1.0 + delta_S * S;
+    return Math.max(0.1, Math.min(fT * fH * fC * fS, 1.2));
+  }
+  function kfFromKt(material, kt) { return 1 + material.notch_sensitivity_q * (kt - 1); }
+  function adjustMaterialForEnv(material, envFactor) {
+    return {
+      ...material,
+      ultimate_tensile_strength_MPa: material.ultimate_tensile_strength_MPa * envFactor,
+      yield_strength_MPa: material.yield_strength_MPa * envFactor,
+      fatigue_strength_coeff_MPa: material.fatigue_strength_coeff_MPa * envFactor,
+      endurance_limit_MPa: material.endurance_limit_MPa * envFactor
+    };
+  }
+
+  // ===== Rainflow (simplificado, estilo ASTM) =====
+  function extractTurningPoints(series) {
+    if (!series || series.length === 0) return [];
+    const tp = [series[0]];
+    for (let i = 1; i < series.length; i++) {
+      const x = series[i];
+      if (x !== tp[tp.length - 1]) tp.push(x);
+    }
+    const filtered = [tp[0]];
+    for (let i = 1; i < tp.length - 1; i++) {
+      const a = tp[i - 1], b = tp[i], c = tp[i + 1];
+      const monotone = (a <= b && b <= c) || (a >= b && b >= c);
+      if (!monotone) filtered.push(b);
+    }
+    filtered.push(tp[tp.length - 1]);
+    return filtered;
+  }
+  function rainflowCount(series) {
+    // Retorna lista de { amplitude, mean, count }
+    const y = extractTurningPoints(series);
+    const stack = [];
+    const cycles = [];
+    const rng = (a, b) => Math.abs(a - b);
+
+    for (const v of y) {
+      stack.push(v);
+      while (stack.length >= 3) {
+        const X = stack[stack.length - 3];
+        const Y = stack[stack.length - 2];
+        const Z = stack[stack.length - 1];
+        const R1 = rng(X, Y);
+        const R2 = rng(Y, Z);
+        if (R2 >= R1) {
+          const amplitude = R1 / 2.0;
+          const mean = (X + Y) / 2.0;
+          cycles.push({ amplitude, mean, count: 0.5 });
+          stack.splice(stack.length - 3, 1);
+        } else {
+          break;
+        }
+      }
+    }
+    while (stack.length >= 2) {
+      const X = stack[stack.length - 2];
+      const Y = stack[stack.length - 1];
+      const amplitude = rng(X, Y) / 2.0;
+      const mean = (X + Y) / 2.0;
+      cycles.push({ amplitude, mean, count: 0.5 });
+      stack.splice(stack.length - 2, 1);
+    }
+    // Agregação
+    const bucket = new Map();
+    for (const c of cycles) {
+      const key = `${Math.round(c.amplitude * 1000) / 1000}|${Math.round(c.mean * 1000) / 1000}`;
+      if (!bucket.has(key)) bucket.set(key, { sumAmp: 0, sumMean: 0, sumCount: 0, n: 0 });
+      const b = bucket.get(key);
+      b.sumAmp += c.amplitude; b.sumMean += c.mean; b.sumCount += c.count; b.n += 1;
+    }
+    const aggregated = [];
+    for (const [, v] of bucket.entries()) {
+      aggregated.push({ amplitude: v.sumAmp / v.n, mean: v.sumMean / v.n, count: v.sumCount });
+    }
+    return aggregated;
+  }
+
+  // ===== Correções de tensão média =====
+  function goodmanCorrection(sigma_a, sigma_m, sigma_uts) {
+    const denom = Math.max(1e-9, 1 - sigma_m / Math.max(1e-9, sigma_uts));
+    return sigma_a / denom;
+  }
+  function haighCorrection(sigma_a, sigma_m, sigma_y) {
+    const denom = Math.max(1e-9, 1 - sigma_m / Math.max(1e-9, sigma_y));
+    return sigma_a / denom;
+  }
+  function gerberCorrection(sigma_a, sigma_m, sigma_uts) {
+    const ratio = sigma_m / Math.max(1e-9, sigma_uts);
+    const denom = Math.max(1e-9, 1 - ratio * ratio);
+    return sigma_a / denom;
+  }
+
+  // ===== Basquin + Miner =====
+  function cyclesToFailure(sigma_a_corr, sigma_f_prime, b, Se) {
+    if (Se > 0 && sigma_a_corr < Se) return Infinity;
+    if (sigma_a_corr <= 0) return Infinity;
+    if (b >= 0) throw new Error("Exponente b deve ser negativo (Basquin).");
+    return Math.pow(sigma_f_prime / sigma_a_corr, 1.0 / (-b));
+  }
+  function minerDamage(cycles, method, sigma_uts, sigma_y, sigma_f_prime, b, Se, kf=1.0) {
+    let D = 0.0;
+    for (const c of cycles) {
+      const sigma_a = c.amplitude * kf;
+      const sigma_m = c.mean;
+      let sigma_a_corr;
+      if (method === "goodman") sigma_a_corr = goodmanCorrection(sigma_a, sigma_m, sigma_uts);
+      else if (method === "haigh") sigma_a_corr = haighCorrection(sigma_a, sigma_m, sigma_y);
+      else if (method === "gerber") sigma_a_corr = gerberCorrection(sigma_a, sigma_m, sigma_uts);
+      else throw new Error("Método inválido. Use 'goodman', 'haigh' ou 'gerber'.");
+
+      const N = cyclesToFailure(sigma_a_corr, sigma_f_prime, b, Se);
+      if (isFinite(N) && N > 0) D += c.count / N;
+    }
+    const life_missions = D === 0 ? Infinity : 1.0 / D;
+    return { D, life_missions };
+  }
+
+  // ===== Seleção / avaliação =====
+  function estimateMassAndCost(material, volume_m3) {
+    if (volume_m3 == null || isNaN(volume_m3)) return { mass: null, cost: null };
+    const mass = material.density_kg_m3 * volume_m3;
+    const cost = mass * material.cost_per_kg_usd;
+    return { mass, cost };
+  }
+
+  function marinSeFactor(params) {
+    const ka = parseFloat(params.ka) || 1.0;
+    const kb = parseFloat(params.kb) || 1.0;
+    const kc = parseFloat(params.kc) || 1.0;
+    const kd = parseFloat(params.kd) || 1.0;
+    const ke = parseFloat(params.ke) || 1.0;
+    return ka * kb * kc * kd * ke;
+  }
+
+  function evaluateMaterialLife(material, env, stressSeries, method="goodman", kt=1.0, marin={}, fsLife=1.0) {
+    const envFactor = fatigueStrengthModifier(env);
+    const matAdj = adjustMaterialForEnv(material, envFactor);
+    const cycles = rainflowCount(stressSeries);
+    const kf = kfFromKt(matAdj, kt);
+
+    // Marin aplicado ao Se (apenas)
+    const k_marin = marinSeFactor(marin);
+    const Se_eff = matAdj.endurance_limit_MPa * k_marin;
+    const sigma_f_eff = matAdj.fatigue_strength_coeff_MPa; // Mantemos σf' com ajuste ambiental, Marin só no Se
+
+    const { D, life_missions } = minerDamage(
+      cycles, method,
+      matAdj.ultimate_tensile_strength_MPa,
+      matAdj.yield_strength_MPa,
+      sigma_f_eff, matAdj.fatigue_exponent_b, Se_eff, kf
+    );
+
+    // FS na vida: exige vida >= FS * meta; aqui retornamos life (sem mexer no cálculo)
+    return {
+      damage: D, life: life_missions, env_factor: envFactor, kf,
+      Se_eff, sigma_f_eff,
+      uts_eff: matAdj.ultimate_tensile_strength_MPa,
+      ys_eff: matAdj.yield_strength_MPa,
+      marin_factor: k_marin
+    };
+  }
+
+  function selectBestMaterials(db, env, stressSeries, lifeTarget, weights=[0.5, 0.5], volume_m3=null, method="goodman", kt=1.0, marin={}, fsLife=1.0) {
+    const [w_cost, w_mass] = weights;
+    const evaluated = [];
+
+    for (const name of Object.keys(db)) {
+      const mat = db[name];
+      const lifeInfo = evaluateMaterialLife(mat, env, stressSeries, method, kt, marin, fsLife);
+      const { mass, cost } = estimateMassAndCost(mat, volume_m3);
+      evaluated.push({
+        name,
+        life: lifeInfo.life,
+        damage: lifeInfo.damage,
+        env_factor: lifeInfo.env_factor,
+        kf: lifeInfo.kf,
+        mass, cost,
+        Se_eff: lifeInfo.Se_eff,
+        uts_eff: lifeInfo.uts_eff,
+        ys_eff: lifeInfo.ys_eff,
+        marin_factor: lifeInfo.marin_factor,
+        material: mat
+      });
+    }
+
+    const costs = evaluated.map(e => e.cost).filter(v => v != null);
+    const masses = evaluated.map(e => e.mass).filter(v => v != null);
+    const cmin = costs.length ? Math.min(...costs) : 0.0;
+    const cmax = costs.length ? Math.max(...costs) : 1.0;
+    const mmin = masses.length ? Math.min(...masses) : 0.0;
+    const mmax = masses.length ? Math.max(...masses) : 1.0;
+
+    const norm = (x, xmin, xmax) => {
+      if (x == null) return 0.0;
+      if (xmax === xmin) return 0.0;
+      return (x - xmin) / (xmax - xmin);
+    };
+
+    const results = [];
+    const requiredLife = lifeTarget * Math.max(1.0, fsLife);
+    for (const e of evaluated) {
+      const meets_life = e.life >= requiredLife || e.life === Infinity;
+      if (!meets_life) continue;
+      const score = w_cost * norm(e.cost, cmin, cmax) + w_mass * norm(e.mass, mmin, mmax);
+      results.push({
+        name: e.name,
+        life: e.life,
+        damage: e.damage,
+        mass: e.mass,
+        cost: e.cost,
+        score,
+        Se_eff: e.Se_eff,
+        uts_eff: e.uts_eff,
+        ys_eff: e.ys_eff
+      });
+    }
+
+    results.sort((a, b) => {
+      const scoreCmp = a.score - b.score;
+      if (scoreCmp !== 0) return scoreCmp;
+      const lifeA = a.life === Infinity ? Number.MAX_SAFE_INTEGER : a.life;
+      const lifeB = b.life === Infinity ? Number.MAX_SAFE_INTEGER : b.life;
+      return lifeB - lifeA;
+    });
+
+    return results;
+  }
+
+  // ===== Séries e exemplo =====
+  const EXAMPLE_CSV = `time_s,stress_MPa
+0.0,0
+0.1,50
+0.2,120
+0.3,30
+0.4,140
+0.5,40
+0.6,160
+0.7,60
+0.8,20
+0.9,0
+1.0,80
+1.1,150
+1.2,70
+1.3,10
+1.4,0`;
+
+  function stressSeriesFromRows(rows) { return rows.map(r => r.stress_MPa); }
+
+  // ===== Gráficos simples (Canvas 2D) =====
+  function drawAxes(ctx, x, y, w, h) {
+    ctx.strokeStyle = "#22304a"; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(x+0.5, y+0.5, w-1, h-1);
+    ctx.stroke();
+  }
+  function plotSeries(canvas, series) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawAxes(ctx, 6, 6, canvas.width-12, canvas.height-12);
+    if (!series || series.length === 0) return;
+    const pad = 12;
+    const w = canvas.width - 2*pad, h = canvas.height - 2*pad;
+    const minY = Math.min(...series), maxY = Math.max(...series);
+    const rangeY = maxY - minY || 1;
+    ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i=0; i<series.length; i++) {
+      const sx = pad + (i/(series.length-1))*w;
+      const sy = pad + (1 - (series[i]-minY)/rangeY)*h;
+      if (i===0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke();
+    // grid labels
+    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillText(`min=${fmt.number(minY)} MPa`, pad+6, canvas.height - 6);
+    ctx.fillText(`max=${fmt.number(maxY)} MPa`, canvas.width - 140, 18);
+  }
+  function plotHistogram(canvas, cycles, bins=12) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawAxes(ctx, 6, 6, canvas.width-12, canvas.height-12);
+    if (!cycles || cycles.length === 0) return;
+    const amps = cycles.map(c => c.amplitude);
+    const counts = cycles.map(c => c.count);
+    const minA = Math.min(...amps), maxA = Math.max(...amps);
+    const min = minA, max = maxA || 1;
+    const bw = (max - min) / bins || 1;
+    const hist = new Array(bins).fill(0);
+    for (let i=0;i<cycles.length;i++){
+      const a = amps[i]; const cnt = counts[i];
+      let bi = Math.floor((a - min) / bw);
+      bi = Math.max(0, Math.min(bins-1, bi));
+      hist[bi] += cnt;
+    }
+    const pad = 12, w = canvas.width - 2*pad, h = canvas.height - 2*pad;
+    const maxCount = Math.max(...hist) || 1;
+    const barW = w / bins * 0.9;
+    for (let i=0;i<bins;i++){
+      const x = pad + i * (w / bins) + (w/bins - barW)/2;
+      const hh = (hist[i] / maxCount) * h;
+      const y = pad + (h - hh);
+      ctx.fillStyle = "#06b6d4";
+      ctx.fillRect(x, y, barW, hh);
+    }
+    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillText(`amp min=${fmt.number(min)} MPa`, pad+6, canvas.height - 6);
+    ctx.fillText(`amp max=${fmt.number(max)} MPa`, canvas.width - 160, 18);
+  }
+  function plotHaigh(canvas, cycles, Se, method, uts, ys) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawAxes(ctx, 6, 6, canvas.width-12, canvas.height-12);
+    if (!cycles || cycles.length === 0) return;
+    const pad = 18, w = canvas.width - 2*pad, h = canvas.height - 2*pad;
+    const means = cycles.map(c => c.mean);
+    const amps  = cycles.map(c => c.amplitude);
+    const minM = Math.min(0, Math.min(...means));
+    const maxM = Math.max(...means, uts);
+    const minA = 0;
+    const maxA = Math.max(...amps, Se);
+    function xScale(m){ return pad + (m - minM) / (maxM - minM || 1) * w; }
+    function yScale(a){ return pad + (1 - (a - minA) / (maxA - minA || 1)) * h; }
+
+    // Limite de fadiga (linha de falha infinita) conforme método
+    ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i=0;i<=100;i++){
+      const m = minM + (i/100)*(maxM - minM);
+      let aAllow = Se;
+      if (method === "goodman") aAllow = Se * Math.max(0, (1 - m / Math.max(1e-9, uts)));
+      else if (method === "haigh") aAllow = Se * Math.max(0, (1 - m / Math.max(1e-9, ys)));
+      else if (method === "gerber") {
+        const ratio = m / Math.max(1e-9, uts);
+        aAllow = Se * Math.max(0, (1 - ratio*ratio));
+      }
+      const X = xScale(m), Y = yScale(aAllow);
+      if (i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    // Pontos (σm, σa), tamanho ~ contagem
+    for (const c of cycles) {
+      const X = xScale(c.mean);
+      const Y = yScale(c.amplitude);
+      const r = Math.max(2, Math.min(8, c.count * 4));
+      ctx.fillStyle = "rgba(34,197,94,0.9)";
+      ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Labels
+    ctx.fillStyle = "#9ca3af"; ctx.font = "12px ui-sans-serif";
+    ctx.fillText("σm (MPa)", canvas.width/2 - 20, canvas.height - 6);
+    ctx.save(); ctx.translate(10, canvas.height/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText("σa (MPa)", 0, 0); ctx.restore();
+  }
+
+  // ===== UI / Estado =====
+  function initMaterialSelect() {
+    const sel = document.getElementById("materialSelect");
+    sel.innerHTML = "";
+    for (const name of Object.keys(MATERIALS_DB)) {
+      const opt = document.createElement("option");
+      opt.value = name; opt.textContent = name; sel.appendChild(opt);
+    }
+  }
+
+  function getEnvironment() {
+    return {
+      temperature_C: parseFloat(document.getElementById("envTemp").value),
+      humidity_pct: parseFloat(document.getElementById("envHumidity").value),
+      corrosivity: parseFloat(document.getElementById("envCorrosivity").value),
+      salinity: parseFloat(document.getElementById("envSalinity").value),
+    };
+  }
+  function getMarin() {
+    return {
+      ka: parseFloat(document.getElementById("ka").value),
+      kb: parseFloat(document.getElementById("kb").value),
+      kc: parseFloat(document.getElementById("kc").value),
+      kd: parseFloat(document.getElementById("kd").value),
+      ke: parseFloat(document.getElementById("ke").value),
+    };
+  }
+  function getParams() {
+    return {
+      method: document.getElementById("fatigueMethod").value,
+      fsLife: parseFloat(document.getElementById("fsLife").value),
+      kt: parseFloat(document.getElementById("kt").value),
+      volume: parseFloat(document.getElementById("volume").value),
+      lifeTarget: parseFloat(document.getElementById("lifeTarget").value),
+      weights: [
+        parseFloat(document.getElementById("wCost").value),
+        parseFloat(document.getElementById("wMass").value),
+      ]
+    };
+  }
+
+  function getStressSeriesFromInputs() {
+    const fileInput = document.getElementById("fileLoadCase");
+    const textarea = document.getElementById("txtLoadCase");
+    const text = textarea.value.trim();
+    if (text.length > 0) {
+      const rows = parseCSV(text);
+      return stressSeriesFromRows(rows);
+    }
+    const files = fileInput.files;
+    if (files && files.length > 0) return null; // caller will read async
+    const rows = parseCSV(EXAMPLE_CSV);
+    return stressSeriesFromRows(rows);
+  }
+
+  function renderSimulateOutput(info, material, mass, cost, env, method, kt, lifeTarget, fsLife) {
+    const div = document.getElementById("simulateOutput");
+    const lines = [];
+    const required = lifeTarget * Math.max(1.0, fsLife);
+    const margin = (info.life === Infinity) ? "inf" : info.life / required;
+    lines.push("=== SimFadiga - Relatório de Simulação ===");
+    lines.push(`Material: ${material.name}`);
+    lines.push(`Ambiente: T=${env.temperature_C}C, H=${env.humidity_pct}%, Corr=${env.corrosivity}, Sal=${env.salinity}`);
+    lines.push(`Fator ambiental aplicado: ${fmt.number(info.env_factor, 3)}`);
+    lines.push(`Kf (a partir de Kt=${fmt.number(kt)}): ${fmt.number(info.kf, 3)}`);
+    lines.push(`Método correção: ${method}`);
+    lines.push(`Parâmetros efectivos: Se=${fmt.number(info.Se_eff)} MPa, σf'=${fmt.number(info.sigma_f_eff)} MPa, UTS=${fmt.number(info.uts_eff)} MPa`);
+    lines.push(`Dano Miner (missão): ${fmt.number(info.damage, 6)}`);
+    lines.push(`Vida (missões até falha): ${fmt.number(info.life, 3)}`);
+    lines.push(`Meta (c/ FS=${fmt.number(fsLife)}): ${fmt.number(required)}  | Margem vida = ${fmt.number(margin)}`);
+    if (mass != null) lines.push(`Massa estimada: ${fmt.mass(mass)}`);
+    if (cost != null) lines.push(`Custo estimado: ${fmt.money(cost)} por peça`);
+    div.textContent = lines.join("\n");
+  }
+
+  function renderSelectionOutput(results) {
+    const div = document.getElementById("selectionOutput");
+    if (!results || results.length === 0) {
+      div.textContent = "Nenhum material atende à meta de vida especificada (com FS).";
+      return;
+    }
+    const lines = [];
+    lines.push("=== SimFadiga - Seleção de Materiais ===");
+    lines.push("Ranking por score (menor é melhor):");
+    results.forEach((r, i) => {
+      lines.push(`${i+1}. ${r.name} | score=${fmt.number(r.score, 3)} | vida=${fmt.number(r.life, 3)} | dano=${fmt.number(r.damage, 3)} | massa=${fmt.mass(r.mass)} | custo=${fmt.money(r.cost)} | Se=${fmt.number(r.Se_eff)} MPa`);
+    });
+    div.textContent = lines.join("\n");
+  }
+
+  function currentSeriesOrExample() {
+    const textarea = document.getElementById("txtLoadCase");
+    const text = textarea.value.trim();
+    if (text.length > 0) {
+      try { return stressSeriesFromRows(parseCSV(text)); } catch { /* ignore */ }
+    }
+    return stressSeriesFromRows(parseCSV(EXAMPLE_CSV));
+  }
+
+  // ===== Botões / handlers =====
+  async function handleSimulate() {
+    const env = getEnvironment();
+    const marin = getMarin();
+    const { method, kt, volume, lifeTarget, fsLife } = getParams();
+    const materialName = document.getElementById("materialSelect").value;
+    const material = MATERIALS_DB[materialName];
+
+    let stressSeries = getStressSeriesFromInputs();
+    if (stressSeries === null) {
+      const txt = await readFileAsText(document.getElementById("fileLoadCase").files[0]);
+      stressSeries = stressSeriesFromRows(parseCSV(txt));
+    }
+
+    const info = evaluateMaterialLife(material, env, stressSeries, method, kt, marin, fsLife);
+    const { mass, cost } = estimateMassAndCost(material, isNaN(volume) ? null : volume);
+    renderSimulateOutput(info, material, mass, cost, env, method, kt, lifeTarget, fsLife);
+
+    // Gráficos
+    const cycles = rainflowCount(stressSeries);
+    plotSeries(document.getElementById("chartTime"), stressSeries);
+    plotHistogram(document.getElementById("chartHist"), cycles);
+    plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, method, info.uts_eff, info.ys_eff);
+
+    // Guardar para relatório
+    lastReport = { type: "simulate", timestamp: new Date().toISOString(), env, marin, params: { method, kt, volume, lifeTarget, fsLife }, material, info };
+  }
+
+  async function handleSelect() {
+    const env = getEnvironment();
+    const marin = getMarin();
+    const { method, kt, volume, lifeTarget, weights, fsLife } = getParams();
+
+    let stressSeries = getStressSeriesFromInputs();
+    if (stressSeries === null) {
+      const txt = await readFileAsText(document.getElementById("fileLoadCase").files[0]);
+      stressSeries = stressSeriesFromRows(parseCSV(txt));
+    }
+
+    const results = selectBestMaterials(MATERIALS_DB, env, stressSeries, lifeTarget, weights, isNaN(volume) ? null : volume, method, kt, marin, fsLife);
+    renderSelectionOutput(results);
+
+    // Gráficos para série corrente
+    const cycles = rainflowCount(stressSeries);
+    const materialName = document.getElementById("materialSelect").value;
+    const mat = MATERIALS_DB[materialName];
+    const infoTmp = evaluateMaterialLife(mat, env, stressSeries, method, kt, marin, fsLife);
+    plotSeries(document.getElementById("chartTime"), stressSeries);
+    plotHistogram(document.getElementById("chartHist"), cycles);
+    plotHaigh(document.getElementById("chartHaigh"), cycles, infoTmp.Se_eff, method, infoTmp.uts_eff, infoTmp.ys_eff);
+
+    lastReport = { type: "select", timestamp: new Date().toISOString(), env, marin, params: { method, kt, volume, lifeTarget, weights, fsLife }, results };
+  }
+
+  function handleDownloadReport() {
+    if (!lastReport) { alert("Execute uma simulação ou seleção antes de exportar."); return; }
+    const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `SimFadiga_Report_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  function handleReset() {
+    if (!confirm("Resetar parâmetros e materiais para padrão?")) return;
+    MATERIALS_DB = JSON.parse(JSON.stringify(DEFAULT_MATERIALS_DB));
+    saveMaterials(MATERIALS_DB);
+    initMaterialSelect();
+    document.getElementById("materialsJson").value = "";
+    document.getElementById("txtLoadCase").value = "";
+    document.getElementById("envTemp").value = 60;
+    document.getElementById("envHumidity").value = 80;
+    document.getElementById("envCorrosivity").value = 0.6;
+    document.getElementById("envSalinity").value = 0.3;
+    document.getElementById("fatigueMethod").value = "goodman";
+    document.getElementById("fsLife").value = 1.0;
+    document.getElementById("kt").value = 1.0;
+    document.getElementById("volume").value = 0.8;
+    document.getElementById("lifeTarget").value = 1000000;
+    document.getElementById("wCost").value = 0.6;
+    document.getElementById("wMass").value = 0.4;
+    document.getElementById("ka").value = 1.0;
+    document.getElementById("kb").value = 1.0;
+    document.getElementById("kc").value = 1.0;
+    document.getElementById("kd").value = 1.0;
+    document.getElementById("ke").value = 1.0;
+    // limpar saídas
+    document.getElementById("simulateOutput").textContent = "";
+    document.getElementById("selectionOutput").textContent = "";
+    // limpar gráficos
+    for (const id of ["chartTime","chartHist","chartHaigh"]) {
+      const ctx = document.getElementById(id).getContext("2d");
+      ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+    }
+    lastReport = null;
+  }
+
+  function applyMaterialsJson() {
+    const txt = document.getElementById("materialsJson").value.trim();
+    if (!txt) { alert("Cole JSON de materiais."); return; }
+    try {
+      const obj = JSON.parse(txt);
+      if (typeof obj !== "object" || Array.isArray(obj)) throw new Error("JSON deve ser objeto {name: material}.");
+      MATERIALS_DB = { ...MATERIALS_DB, ...obj };
+      saveMaterials(MATERIALS_DB);
+      initMaterialSelect();
+      alert("Materiais aplicados.");
+    } catch (e) {
+      alert("Erro no JSON: " + e.message);
+    }
+  }
+
+  function exportMaterialsJson() {
+    const blob = new Blob([JSON.stringify(MATERIALS_DB, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "materials_db.json";
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  function kaPresetChanged() {
+    const preset = document.getElementById("kaPreset").value;
+    const materialName = document.getElementById("materialSelect").value;
+    const mat = MATERIALS_DB[materialName];
+    const Sut = mat ? mat.ultimate_tensile_strength_MPa : 600; // MPa
+    // Fitted for steels: ka = a * (Sut)^b, with Sut in MPa; rough mapping:
+    const presets = {
+      "ground": { a: 1.58, b: -0.085 },
+      "machined": { a: 4.51, b: -0.265 },
+      "hot-rolled": { a: 57.7, b: -0.718 },
+      "as-forged": { a: 272, b: -0.995 }
+    };
+    if (preset && presets[preset]) {
+      const { a, b } = presets[preset];
+      const ka = a * Math.pow(Sut, b);
+      document.getElementById("ka").value = Math.max(0.1, Math.min(1.0, ka)).toFixed(3);
+    }
+  }
+
+  function kePresetChanged() {
+    const val = document.getElementById("kePreset").value;
+    if (val) document.getElementById("ke").value = val;
+  }
+
+  // ===== Helpers =====
+  async function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file);
+    });
+  }
+
+  function plotCurrent() {
+    try {
+      const series = currentSeriesOrExample();
+      plotSeries(document.getElementById("chartTime"), series);
+      const cycles = rainflowCount(series);
+      plotHistogram(document.getElementById("chartHist"), cycles);
+      // For Haigh line we need Se/UTS; use selected material with nominal env/marin defaults:
+      const env = getEnvironment();
+      const marin = getMarin();
+      const params = getParams();
+      const mat = MATERIALS_DB[document.getElementById("materialSelect").value];
+      const info = evaluateMaterialLife(mat, env, series, params.method, params.kt, marin, params.fsLife);
+      plotHaigh(document.getElementById("chartHaigh"), cycles, info.Se_eff, params.method, info.uts_eff, info.ys_eff);
+    } catch {/* ignore */}
+  }
+
+  // ===== Estado de relatório =====
+  let lastReport = null;
+
+  // ===== Init =====
+  function boot() {
+    initMaterialSelect();
+    document.getElementById("btnUseExampleLoad").addEventListener("click", () => {
+      document.getElementById("txtLoadCase").value = EXAMPLE_CSV;
+      plotCurrent();
+    });
+    document.getElementById("btnPlotSeries").addEventListener("click", plotCurrent);
+    document.getElementById("btnSimulate").addEventListener("click", handleSimulate);
+    document.getElementById("btnSelect").addEventListener("click", handleSelect);
+    document.getElementById("btnDownloadReport").addEventListener("click", handleDownloadReport);
+    document.getElementById("btnReset").addEventListener("click", handleReset);
+    document.getElementById("btnApplyMaterials").addEventListener("click", applyMaterialsJson);
+    document.getElementById("btnExportMaterials").addEventListener("click", exportMaterialsJson);
+    document.getElementById("kaPreset").addEventListener("change", kaPresetChanged);
+    document.getElementById("kePreset").addEventListener("change", kePresetChanged);
+    // desenhar exemplo
+    plotCurrent();
+  }
+  document.addEventListener("DOMContentLoaded", boot);
+  </script>
+</body>
+</html>

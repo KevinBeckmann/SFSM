@@ -7,9 +7,9 @@
   <style>
   :root {
     /* Paleta tecnológica/industrial — base grafite */
-    --bg: #0d1e3f;
-    --panel: #172641;
-    --card: #070c15;
+    --bg: #0b172e;
+    --panel: #19263e;
+    --card: #0f141c;
     --text: #d1d5db;
     --muted: #8a93a6;
     --border: #232a33;
@@ -141,14 +141,14 @@
 <body>
   <header>
     <div class="container brand">
-      
+      <img id="appLogo" class="logo" alt="Logo" />
       <div class="title">
         <h1>SimFadiga — Simulador Avançado de Fadiga e Seleção de Materiais</h1>
         <p>Simule vida em serviço e selecione materiais considerando ambiente, correções de tensão média (Goodman/Haigh/Gerber), fatores de Marin e custo/massa.</p>
       </div>
       <div class="header-actions">
-       
-       
+        <button id="btnSetLogo" class="secondary">Adicionar logo</button>
+        <button id="btnRemoveLogo" class="secondary">Remover</button>
         <input type="file" id="logoFile" accept="image/*" hidden />
       </div>
     </div>
@@ -212,7 +212,7 @@
         <div class="card">
           <h3>Fatores de Marin (aplicados ao Se)</h3>
           <div class="form">
-            <label>ka — Acabamento superficial
+            <label>ka — acabamento superficial
               <div class="inline">
                 <input type="number" id="ka" value="1.0" step="0.01" />
                 <select id="kaPreset" class="secondary">
@@ -224,20 +224,20 @@
                 </select>
               </div>
             </label>
-            <label>kb — Tamanho
+            <label>kb — tamanho
               <input type="number" id="kb" value="1.0" step="0.01" />
             </label>
-            <label>kc — Tipo de carregamento
+            <label>kc — tipo de carregamento
               <select id="kc">
                 <option value="1.0" selected>Bending (1.00)</option>
                 <option value="0.85">Axial (0.85)</option>
                 <option value="0.59">Torsion (0.59)</option>
               </select>
             </label>
-            <label>kd — Temperatura
+            <label>kd — temperatura
               <input type="number" id="kd" value="1.0" step="0.01" />
             </label>
-            <label>ke — Confiabilidade
+            <label>ke — confiabilidade
               <div class="inline">
                 <input type="number" id="ke" value="1.0" step="0.01" />
                 <select id="kePreset" class="secondary">
